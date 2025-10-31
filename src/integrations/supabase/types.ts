@@ -14,7 +14,177 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          age: number | null
+          allergies: string[] | null
+          bmr: number | null
+          created_at: string | null
+          full_name: string | null
+          goals: string[] | null
+          health_conditions: string[] | null
+          height: number | null
+          id: string
+          medications: string[] | null
+          sex: string | null
+          updated_at: string | null
+          weight: number | null
+        }
+        Insert: {
+          age?: number | null
+          allergies?: string[] | null
+          bmr?: number | null
+          created_at?: string | null
+          full_name?: string | null
+          goals?: string[] | null
+          health_conditions?: string[] | null
+          height?: number | null
+          id: string
+          medications?: string[] | null
+          sex?: string | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Update: {
+          age?: number | null
+          allergies?: string[] | null
+          bmr?: number | null
+          created_at?: string | null
+          full_name?: string | null
+          goals?: string[] | null
+          health_conditions?: string[] | null
+          height?: number | null
+          id?: string
+          medications?: string[] | null
+          sex?: string | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan_type: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_type: string
+          status: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_type?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      timeline_events: {
+        Row: {
+          activity_type: string | null
+          attachment_urls: string[] | null
+          calories: number | null
+          calories_burned: number | null
+          carbs: number | null
+          created_at: string | null
+          description: string | null
+          diagnosis: string | null
+          doctor_name: string | null
+          dosage: string | null
+          duration: number | null
+          event_date: string
+          event_type: string
+          fats: number | null
+          id: string
+          intensity: string | null
+          meal_type: string | null
+          medication_name: string | null
+          prescription_end: string | null
+          prescription_start: string | null
+          protein: number | null
+          severity: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_type?: string | null
+          attachment_urls?: string[] | null
+          calories?: number | null
+          calories_burned?: number | null
+          carbs?: number | null
+          created_at?: string | null
+          description?: string | null
+          diagnosis?: string | null
+          doctor_name?: string | null
+          dosage?: string | null
+          duration?: number | null
+          event_date?: string
+          event_type: string
+          fats?: number | null
+          id?: string
+          intensity?: string | null
+          meal_type?: string | null
+          medication_name?: string | null
+          prescription_end?: string | null
+          prescription_start?: string | null
+          protein?: number | null
+          severity?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: string | null
+          attachment_urls?: string[] | null
+          calories?: number | null
+          calories_burned?: number | null
+          carbs?: number | null
+          created_at?: string | null
+          description?: string | null
+          diagnosis?: string | null
+          doctor_name?: string | null
+          dosage?: string | null
+          duration?: number | null
+          event_date?: string
+          event_type?: string
+          fats?: number | null
+          id?: string
+          intensity?: string | null
+          meal_type?: string | null
+          medication_name?: string | null
+          prescription_end?: string | null
+          prescription_start?: string | null
+          protein?: number | null
+          severity?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
