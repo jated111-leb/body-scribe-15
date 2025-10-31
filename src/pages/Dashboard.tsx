@@ -18,18 +18,6 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth");
-    }
-  }, [user, loading, navigate]);
-
-  useEffect(() => {
-    if (user) {
-      loadProfile();
-    }
-  }, [user]);
-
   const loadProfile = async () => {
     const { data, error } = await supabase
       .from("profiles")
@@ -53,13 +41,6 @@ const Dashboard = () => {
     navigate("/");
   };
 
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -73,7 +54,7 @@ const Dashboard = () => {
               <div>
                 <h1 className="text-3xl font-bold">Your Health Timeline</h1>
                 <p className="text-muted-foreground">
-                  Welcome back, {profile?.full_name || user.email}!
+                  Welcome to Life Tracker!
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -82,14 +63,6 @@ const Dashboard = () => {
                   onClick={() => setShowQuickLog(true)}
                 >
                   <Plus className="mr-2 h-4 w-4" /> Quick Log
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleSignOut}
-                  title="Sign Out"
-                >
-                  <LogOut className="h-5 w-5" />
                 </Button>
               </div>
             </div>

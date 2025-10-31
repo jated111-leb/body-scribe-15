@@ -55,33 +55,12 @@ export const TimelineView = ({ selectedDate }: TimelineViewProps) => {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user) {
-      loadEvents();
-    }
-  }, [selectedDate, user]);
+    loadEvents();
+  }, [selectedDate]);
 
   const loadEvents = async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    const startOfDay = new Date(selectedDate);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(selectedDate);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    const { data, error } = await supabase
-      .from("timeline_events")
-      .select("*")
-      .eq("user_id", user.id)
-      .gte("event_date", startOfDay.toISOString())
-      .lte("event_date", endOfDay.toISOString())
-      .order("event_date", { ascending: true });
-
-    if (error) {
-      console.error("Error loading events:", error);
-    } else {
-      setEvents(data || []);
-    }
+    // Show mock data for demo
+    setEvents(mockEvents);
     setLoading(false);
   };
 
@@ -122,16 +101,7 @@ export const TimelineView = ({ selectedDate }: TimelineViewProps) => {
           events.map((event) => (
             <TimelineEntry 
               key={event.id} 
-              event={{
-                ...event,
-                icon: getIconForType(event.event_type),
-                color: getColorForType(event.event_type),
-                time: new Date(event.event_date).toLocaleTimeString('en-US', { 
-                  hour: '2-digit', 
-                  minute: '2-digit', 
-                  hour12: false 
-                }),
-              }} 
+              event={event}
             />
           ))
         )}
@@ -155,7 +125,7 @@ const TimelineEntry = ({ event }: { event: any }) => {
         <div className="flex items-center gap-2 mb-1">
           <h4 className="font-semibold">{event.title}</h4>
           <Badge variant="outline" className="text-xs">
-            {event.event_type}
+            {event.type}
           </Badge>
         </div>
         <p className="text-sm text-muted-foreground">{event.description}</p>

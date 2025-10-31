@@ -28,11 +28,20 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
   const { user } = useAuth();
 
   const handleSave = async () => {
-    if (!freeText.trim() || !user) return;
+    if (!freeText.trim()) return;
+
+    // For demo without auth, just show toast
+    toast({
+      title: "Entry logged!",
+      description: "Your health data has been recorded.",
+    });
+    setFreeText("");
+    onOpenChange(false);
+    return;
 
     setLoading(true);
     const { error } = await supabase.from("timeline_events").insert({
-      user_id: user.id,
+      user_id: user!.id,
       event_type: "freetext",
       title: "Quick Log",
       description: freeText,
