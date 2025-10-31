@@ -5,7 +5,7 @@ import { TimelineView } from "@/components/dashboard/TimelineView";
 import { ChatSidebar } from "@/components/dashboard/ChatSidebar";
 import { QuickLogDialog } from "@/components/dashboard/QuickLogDialog";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -63,6 +63,14 @@ const Dashboard = () => {
                   onClick={() => setShowQuickLog(true)}
                 >
                   <Plus className="mr-2 h-4 w-4" /> Quick Log
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => navigate("/settings")}
+                  title="Settings"
+                >
+                  <Settings className="h-5 w-5" />
                 </Button>
               </div>
             </div>
