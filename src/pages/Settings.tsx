@@ -18,11 +18,11 @@ const Settings = () => {
   const { toast } = useToast();
 
   const [profile, setProfile] = useState({
-    name: "",
-    age: "",
+    name: "Elias",
+    age: "36",
     sex: "",
-    height: "",
-    weight: "",
+    height: "176",
+    weight: "73",
   });
 
   const [health, setHealth] = useState({
