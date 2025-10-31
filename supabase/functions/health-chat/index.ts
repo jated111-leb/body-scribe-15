@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,9 +14,61 @@ serve(async (req) => {
   try {
     const { messages } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const authHeader = req.headers.get('Authorization');
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    // Create Supabase client with user's auth token
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      global: {
+        headers: authHeader ? { Authorization: authHeader } : {},
+      },
+    });
+
+    // Get user's profile and recent timeline events
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    let userContext = "";
+    
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      const { data: recentEvents } = await supabase
+        .from('timeline_events')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('event_date', { ascending: false })
+        .limit(20);
+
+      if (profile) {
+        userContext = `\n\nUser Profile:
+- Name: ${profile.full_name || 'Not set'}
+- Age: ${profile.age || 'Not set'}
+- Sex: ${profile.sex || 'Not set'}
+- Height: ${profile.height || 'Not set'} cm
+- Weight: ${profile.weight || 'Not set'} kg
+- BMR: ${profile.bmr || 'Not calculated'}
+- Health Conditions: ${profile.health_conditions?.join(', ') || 'None'}
+- Medications: ${profile.medications?.join(', ') || 'None'}
+- Allergies: ${profile.allergies?.join(', ') || 'None'}
+- Goals: ${profile.goals?.join(', ') || 'Not set'}`;
+      }
+
+      if (recentEvents && recentEvents.length > 0) {
+        userContext += `\n\nRecent Timeline Events (last 20):`;
+        recentEvents.forEach(event => {
+          userContext += `\n- ${event.event_type}: ${event.title} (${new Date(event.event_date).toLocaleDateString()})`;
+          if (event.description) userContext += ` - ${event.description}`;
+        });
+      }
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -29,7 +82,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are a helpful AI health assistant for Life Tracker. You help users understand their health data, answer questions about their timeline, and provide wellness insights. Keep answers clear, supportive, and encouraging."
+            content: `You are a helpful AI health assistant for Life Tracker. You help users understand their health data, answer questions about their timeline, and provide wellness insights. Keep answers clear, supportive, and encouraging. Use the user's profile and timeline data to provide personalized responses.${userContext}`
           },
           ...messages,
         ],
