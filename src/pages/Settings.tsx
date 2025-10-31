@@ -53,15 +53,6 @@ const Settings = () => {
     date: Date | undefined;
   }>>([]);
 
-  const [pastHospitalAdmissions, setPastHospitalAdmissions] = useState<Array<{
-    name: string;
-    date: Date | undefined;
-  }>>([]);
-
-  const [pastERAdmissions, setPastERAdmissions] = useState<Array<{
-    name: string;
-    date: Date | undefined;
-  }>>([]);
 
   const [goals, setGoals] = useState("");
 
@@ -121,33 +112,6 @@ const Settings = () => {
     setPastInflammations(updated);
   };
 
-  const addPastHospitalAdmission = () => {
-    setPastHospitalAdmissions([...pastHospitalAdmissions, { name: "", date: undefined }]);
-  };
-
-  const removePastHospitalAdmission = (index: number) => {
-    setPastHospitalAdmissions(pastHospitalAdmissions.filter((_, i) => i !== index));
-  };
-
-  const updatePastHospitalAdmission = (index: number, field: string, value: any) => {
-    const updated = [...pastHospitalAdmissions];
-    updated[index] = { ...updated[index], [field]: value };
-    setPastHospitalAdmissions(updated);
-  };
-
-  const addPastERAdmission = () => {
-    setPastERAdmissions([...pastERAdmissions, { name: "", date: undefined }]);
-  };
-
-  const removePastERAdmission = (index: number) => {
-    setPastERAdmissions(pastERAdmissions.filter((_, i) => i !== index));
-  };
-
-  const updatePastERAdmission = (index: number, field: string, value: any) => {
-    const updated = [...pastERAdmissions];
-    updated[index] = { ...updated[index], [field]: value };
-    setPastERAdmissions(updated);
-  };
 
   const handleSave = () => {
     // Save to localStorage for demo
@@ -158,8 +122,6 @@ const Settings = () => {
       pastInjuries,
       pastSurgeries,
       pastInflammations,
-      pastHospitalAdmissions,
-      pastERAdmissions,
       goals,
     }));
 
@@ -612,141 +574,6 @@ const Settings = () => {
           </CardContent>
         </Card>
 
-        {/* Past Hospital Admissions */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Past Hospital Admissions</CardTitle>
-                <CardDescription>Record hospital stays and admission dates</CardDescription>
-              </div>
-              <Button onClick={addPastHospitalAdmission} size="sm" variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                Add
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {pastHospitalAdmissions.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No past hospital admissions added. Click "Add" to record previous admissions.
-              </p>
-            ) : (
-              pastHospitalAdmissions.map((admission, index) => (
-                <div key={index} className="flex gap-2 items-start border rounded-lg p-4">
-                  <div className="flex-1 space-y-3">
-                    <Input
-                      placeholder="Reason for admission (e.g., Pneumonia treatment)"
-                      value={admission.name}
-                      onChange={(e) => updatePastHospitalAdmission(index, "name", e.target.value)}
-                    />
-                    <div className="space-y-2">
-                      <Label className="text-xs">Admission Date</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !admission.date && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {admission.date ? format(admission.date, "PP") : "Pick date"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 z-50 bg-popover" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={admission.date}
-                            onSelect={(date) => updatePastHospitalAdmission(index, "date", date)}
-                            initialFocus
-                            className="pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removePastHospitalAdmission(index)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Past ER Admissions */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Past ER Admissions</CardTitle>
-                <CardDescription>Record emergency room visits and dates</CardDescription>
-              </div>
-              <Button onClick={addPastERAdmission} size="sm" variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                Add
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {pastERAdmissions.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No past ER admissions added. Click "Add" to record previous ER visits.
-              </p>
-            ) : (
-              pastERAdmissions.map((erVisit, index) => (
-                <div key={index} className="flex gap-2 items-start border rounded-lg p-4">
-                  <div className="flex-1 space-y-3">
-                    <Input
-                      placeholder="Reason for ER visit (e.g., Severe chest pain)"
-                      value={erVisit.name}
-                      onChange={(e) => updatePastERAdmission(index, "name", e.target.value)}
-                    />
-                    <div className="space-y-2">
-                      <Label className="text-xs">ER Visit Date</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !erVisit.date && "text-muted-foreground"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {erVisit.date ? format(erVisit.date, "PP") : "Pick date"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 z-50 bg-popover" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={erVisit.date}
-                            onSelect={(date) => updatePastERAdmission(index, "date", date)}
-                            initialFocus
-                            className="pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => removePastERAdmission(index)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
 
         {/* Health Goals */}
         <Card>
