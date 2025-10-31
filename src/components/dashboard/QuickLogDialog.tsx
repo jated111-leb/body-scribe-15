@@ -17,18 +17,31 @@ import { useToast } from "@/hooks/use-toast";
 interface QuickLogDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSave: (event: any) => void;
 }
 
-export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
+export const QuickLogDialog = ({ open, onOpenChange, onSave }: QuickLogDialogProps) => {
   const [freeText, setFreeText] = useState("");
   const { toast } = useToast();
 
   const handleSave = () => {
-    toast({
-      title: "Entry logged!",
-      description: "Your health data has been recorded.",
-    });
-    setFreeText("");
+    if (freeText.trim()) {
+      const newEvent = {
+        id: Date.now(),
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+        type: "freetext",
+        title: "Quick Log",
+        description: freeText,
+        icon: Utensils,
+        color: "primary",
+      };
+      onSave(newEvent);
+      toast({
+        title: "Entry logged!",
+        description: "Your health data has been recorded.",
+      });
+      setFreeText("");
+    }
     onOpenChange(false);
   };
 

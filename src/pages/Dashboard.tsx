@@ -9,6 +9,7 @@ import { Plus } from "lucide-react";
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showQuickLog, setShowQuickLog] = useState(false);
+  const [events, setEvents] = useState<any[]>([]);
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -45,7 +46,7 @@ const Dashboard = () => {
             />
 
             {/* Timeline for selected day */}
-            <TimelineView selectedDate={selectedDate} />
+            <TimelineView selectedDate={selectedDate} events={events} />
           </div>
         </div>
 
@@ -57,6 +58,7 @@ const Dashboard = () => {
       <QuickLogDialog 
         open={showQuickLog}
         onOpenChange={setShowQuickLog}
+        onSave={(event) => setEvents([...events, event])}
       />
     </div>
   );

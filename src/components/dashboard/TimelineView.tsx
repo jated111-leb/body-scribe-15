@@ -4,6 +4,7 @@ import { Utensils, Activity, Pill, AlertCircle } from "lucide-react";
 
 interface TimelineViewProps {
   selectedDate: Date;
+  events: any[];
 }
 
 // Mock data for demo
@@ -46,19 +47,21 @@ const mockEvents = [
   },
 ];
 
-export const TimelineView = ({ selectedDate }: TimelineViewProps) => {
+export const TimelineView = ({ selectedDate, events }: TimelineViewProps) => {
+  const displayEvents = events.length > 0 ? events : mockEvents;
+  
   return (
     <Card>
       <CardHeader>
         <CardTitle>Today's Entries</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {mockEvents.length === 0 ? (
+        {displayEvents.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">
             No entries for this day yet. Use Quick Log to add one!
           </p>
         ) : (
-          mockEvents.map((event) => (
+          displayEvents.map((event) => (
             <TimelineEntry key={event.id} event={event} />
           ))
         )}
