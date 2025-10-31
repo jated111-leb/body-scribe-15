@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,8 @@ import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const TOTAL_STEPS = 4;
 
@@ -15,6 +17,11 @@ const Onboarding = () => {
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) navigate("/auth");
+  }, [user, navigate]);
 
   // Form state (simplified for demo)
   const [profile, setProfile] = useState({
@@ -35,13 +42,26 @@ const Onboarding = () => {
 
   const progressPercent = (step / TOTAL_STEPS) * 100;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < TOTAL_STEPS) {
       setStep(step + 1);
     } else {
       // Complete onboarding
+      if (user) {
+        await supabase.from("profiles").update({
+          full_name: profile.name,
+          age: parseInt(profile.age),
+          sex: profile.sex,
+          height: parseFloat(profile.height),
+          weight: parseFloat(profile.weight),
+          health_conditions: health.conditions ? health.conditions.split(",").map(c => c.trim()) : [],
+          medications: health.medications ? health.medications.split(",").map(m => m.trim()) : [],
+          allergies: health.allergies ? health.allergies.split(",").map(a => a.trim()) : [],
+          goals: goals ? goals.split(",").map(g => g.trim()) : [],
+        }).eq("id", user.id);
+      }
       toast({
-        title: "Welcome to Lovable OS!",
+        title: "Welcome to Life Tracker!",
         description: "Your health journey starts now.",
       });
       navigate("/dashboard");

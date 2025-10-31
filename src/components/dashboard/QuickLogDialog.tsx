@@ -13,36 +13,47 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Utensils, Activity, Pill, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface QuickLogDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (event: any) => void;
 }
 
-export const QuickLogDialog = ({ open, onOpenChange, onSave }: QuickLogDialogProps) => {
+export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
   const [freeText, setFreeText] = useState("");
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const handleSave = () => {
-    if (freeText.trim()) {
-      const newEvent = {
-        id: Date.now(),
-        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-        type: "freetext",
-        title: "Quick Log",
-        description: freeText,
-        icon: Utensils,
-        color: "primary",
-      };
-      onSave(newEvent);
+  const handleSave = async () => {
+    if (!freeText.trim() || !user) return;
+
+    setLoading(true);
+    const { error } = await supabase.from("timeline_events").insert({
+      user_id: user.id,
+      event_type: "freetext",
+      title: "Quick Log",
+      description: freeText,
+      event_date: new Date().toISOString(),
+    });
+
+    if (error) {
+      toast({
+        title: "Error logging entry",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
       toast({
         title: "Entry logged!",
         description: "Your health data has been recorded.",
       });
       setFreeText("");
+      onOpenChange(false);
     }
-    onOpenChange(false);
+    setLoading(false);
   };
 
   return (
@@ -109,8 +120,8 @@ export const QuickLogDialog = ({ open, onOpenChange, onSave }: QuickLogDialogPro
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} className="bg-gradient-primary">
-            Save Entry
+          <Button onClick={handleSave} className="bg-gradient-primary" disabled={loading || !freeText.trim()}>
+            {loading ? "Saving..." : "Save Entry"}
           </Button>
         </div>
       </DialogContent>

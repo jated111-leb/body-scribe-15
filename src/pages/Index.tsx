@@ -32,7 +32,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="bg-gradient-primary hover:opacity-90 shadow-glow"
-                onClick={() => navigate('/onboarding')}
+                onClick={() => navigate('/auth')}
               >
                 Get Started <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -83,7 +83,7 @@ const Index = () => {
           </p>
           <Button 
             size="lg"
-            onClick={() => navigate('/onboarding')}
+            onClick={() => navigate('/auth')}
             className="bg-gradient-primary hover:opacity-90"
           >
             Start Your Journey

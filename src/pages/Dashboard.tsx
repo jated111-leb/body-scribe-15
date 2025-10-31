@@ -1,15 +1,65 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { CalendarView } from "@/components/dashboard/CalendarView";
 import { TimelineView } from "@/components/dashboard/TimelineView";
 import { ChatSidebar } from "@/components/dashboard/ChatSidebar";
 import { QuickLogDialog } from "@/components/dashboard/QuickLogDialog";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showQuickLog, setShowQuickLog] = useState(false);
-  const [events, setEvents] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
+  const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
+
+  useEffect(() => {
+    if (user) {
+      loadProfile();
+    }
+  }, [user]);
+
+  const loadProfile = async () => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user?.id)
+      .single();
+
+    if (error) {
+      console.error("Error loading profile:", error);
+    } else {
+      setProfile(data);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You've been successfully signed out.",
+    });
+    navigate("/");
+  };
+
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -23,20 +73,25 @@ const Dashboard = () => {
               <div>
                 <h1 className="text-3xl font-bold">Your Health Timeline</h1>
                 <p className="text-muted-foreground">
-                  {selectedDate.toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
+                  Welcome back, {profile?.full_name || user.email}!
                 </p>
               </div>
-              <Button 
-                className="bg-gradient-primary shadow-glow"
-                onClick={() => setShowQuickLog(true)}
-              >
-                <Plus className="mr-2 h-4 w-4" /> Quick Log
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  className="bg-gradient-primary shadow-glow"
+                  onClick={() => setShowQuickLog(true)}
+                >
+                  <Plus className="mr-2 h-4 w-4" /> Quick Log
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleSignOut}
+                  title="Sign Out"
+                >
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
 
             {/* Calendar */}
@@ -46,7 +101,7 @@ const Dashboard = () => {
             />
 
             {/* Timeline for selected day */}
-            <TimelineView selectedDate={selectedDate} events={events} />
+            <TimelineView selectedDate={selectedDate} />
           </div>
         </div>
 
@@ -58,7 +113,6 @@ const Dashboard = () => {
       <QuickLogDialog 
         open={showQuickLog}
         onOpenChange={setShowQuickLog}
-        onSave={(event) => setEvents([...events, event])}
       />
     </div>
   );
