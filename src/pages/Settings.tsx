@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Calendar as CalendarIcon, Plus, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -142,22 +143,76 @@ const Settings = () => {
   };
 
 
-  const handleSave = () => {
-    // Save to localStorage for demo
-    localStorage.setItem("userProfile", JSON.stringify({
-      ...profile,
-      health,
-      pastMedications,
-      pastInjuries,
-      pastSurgeries,
-      pastInflammations,
-      goals,
-    }));
+  const handleSave = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to save your profile.",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    toast({
-      title: "Profile saved!",
-      description: "Your health information has been updated.",
-    });
+      // Calculate BMR (Mifflin-St Jeor equation for males)
+      let bmr = null;
+      if (profile.weight && profile.height && profile.age && profile.sex) {
+        const weight = parseFloat(profile.weight);
+        const height = parseFloat(profile.height);
+        const age = parseInt(profile.age);
+        
+        if (profile.sex === "male") {
+          bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+        } else if (profile.sex === "female") {
+          bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+        }
+      }
+
+      // Prepare data for profiles table
+      const profileData = {
+        id: user.id,
+        full_name: profile.name,
+        age: profile.age ? parseInt(profile.age) : null,
+        sex: profile.sex || null,
+        height: profile.height ? parseFloat(profile.height) : null,
+        weight: profile.weight ? parseFloat(profile.weight) : null,
+        bmr: bmr,
+        health_conditions: health.conditions ? health.conditions.split(',').map(s => s.trim()).filter(Boolean) : [],
+        medications: health.medications ? health.medications.split('\n').filter(Boolean) : [],
+        allergies: health.allergies ? health.allergies.split(',').map(s => s.trim()).filter(Boolean) : [],
+        goals: goals ? goals.split('\n').filter(Boolean) : [],
+      };
+
+      // Save to profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert(profileData, { onConflict: 'id' });
+
+      if (profileError) throw profileError;
+
+      // Save medical history to localStorage (until we create dedicated tables)
+      localStorage.setItem("medicalHistory", JSON.stringify({
+        supplements: health.supplements,
+        pastMedications,
+        pastInjuries,
+        pastSurgeries,
+        pastInflammations,
+      }));
+
+      toast({
+        title: "Profile saved!",
+        description: "Your health information has been updated.",
+      });
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save your profile. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
