@@ -180,7 +180,7 @@ const Settings = () => {
         weight: profile.weight ? parseFloat(profile.weight) : null,
         bmr: bmr,
         health_conditions: health.conditions ? health.conditions.split(',').map(s => s.trim()).filter(Boolean) : [],
-        medications: health.medications ? health.medications.split('\n').filter(Boolean) : [],
+        medications: health.supplements ? health.supplements.split('\n').filter(Boolean) : [],
         allergies: health.allergies ? health.allergies.split(',').map(s => s.trim()).filter(Boolean) : [],
         goals: goals ? goals.split('\n').filter(Boolean) : [],
       };
@@ -265,9 +265,6 @@ const Settings = () => {
 
         if (eventsError) throw eventsError;
       }
-
-      // Save supplements to localStorage (as they're ongoing)
-      localStorage.setItem("supplements", health.supplements);
 
       toast({
         title: "Profile saved!",
