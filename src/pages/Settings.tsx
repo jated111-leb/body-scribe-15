@@ -147,16 +147,7 @@ const Settings = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to save your profile.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Calculate BMR (Mifflin-St Jeor equation for males)
+      // Calculate BMR (Mifflin-St Jeor equation)
       let bmr = null;
       if (profile.weight && profile.height && profile.age && profile.sex) {
         const weight = parseFloat(profile.weight);
@@ -170,7 +161,42 @@ const Settings = () => {
         }
       }
 
-      // Prepare data for profiles table
+      if (!user) {
+        // Guest mode: save to localStorage
+        const guestData = {
+          profile,
+          health,
+          goals,
+          pastMedications: pastMedications.map(m => ({
+            name: m.name,
+            startDate: m.startDate?.toISOString(),
+            endDate: m.endDate?.toISOString(),
+          })),
+          pastInjuries: pastInjuries.map(i => ({
+            name: i.name,
+            date: i.date?.toISOString(),
+          })),
+          pastSurgeries: pastSurgeries.map(s => ({
+            name: s.name,
+            date: s.date?.toISOString(),
+          })),
+          pastInflammations: pastInflammations.map(inf => ({
+            name: inf.name,
+            date: inf.date?.toISOString(),
+          })),
+          bmr,
+        };
+        
+        localStorage.setItem('guestProfile', JSON.stringify(guestData));
+        
+        toast({
+          title: "Profile saved!",
+          description: "Your health information has been saved locally. Sign up to sync across devices.",
+        });
+        return;
+      }
+
+      // Authenticated mode: save to database
       const profileData = {
         id: user.id,
         full_name: profile.name,
@@ -185,7 +211,6 @@ const Settings = () => {
         goals: goals ? goals.split('\n').filter(Boolean) : [],
       };
 
-      // Save to profiles table
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert(profileData, { onConflict: 'id' });
@@ -195,7 +220,6 @@ const Settings = () => {
       // Create timeline events for medical history
       const timelineEvents = [];
 
-      // Add past medications as events
       for (const med of pastMedications) {
         if (med.name && med.startDate) {
           timelineEvents.push({
@@ -210,7 +234,6 @@ const Settings = () => {
         }
       }
 
-      // Add past injuries as events
       for (const injury of pastInjuries) {
         if (injury.name && injury.date) {
           timelineEvents.push({
@@ -223,7 +246,6 @@ const Settings = () => {
         }
       }
 
-      // Add past surgeries as events
       for (const surgery of pastSurgeries) {
         if (surgery.name && surgery.date) {
           timelineEvents.push({
@@ -236,7 +258,6 @@ const Settings = () => {
         }
       }
 
-      // Add past inflammations as events
       for (const inflammation of pastInflammations) {
         if (inflammation.name && inflammation.date) {
           timelineEvents.push({
@@ -250,14 +271,12 @@ const Settings = () => {
         }
       }
 
-      // Delete existing medical history events before inserting new ones
       await supabase
         .from('timeline_events')
         .delete()
         .eq('user_id', user.id)
         .in('event_type', ['medication', 'injury', 'surgery', 'illness']);
 
-      // Insert all timeline events
       if (timelineEvents.length > 0) {
         const { error: eventsError } = await supabase
           .from('timeline_events')

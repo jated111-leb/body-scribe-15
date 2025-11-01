@@ -11,21 +11,94 @@ export type TimelineEvent = {
   severity?: string | null;
 };
 
-// Guest demo events derived from your personal information
-export const getGuestEvents = (): TimelineEvent[] => [
-  // Medication: Suprax (Antibiotic) Oct 6-12, 2025
+// Get guest events from localStorage or defaults
+const getGuestEventsFromStorage = (): TimelineEvent[] => {
+  const stored = localStorage.getItem('guestProfile');
+  if (!stored) return getDefaultGuestEvents();
+
+  try {
+    const data = JSON.parse(stored);
+    const events: TimelineEvent[] = [];
+
+    // Build events from stored data
+    if (data.pastMedications) {
+      data.pastMedications.forEach((med: any, idx: number) => {
+        if (med.name && med.startDate) {
+          events.push({
+            id: `guest-med-${idx}`,
+            event_type: 'medication',
+            title: med.name,
+            event_date: med.startDate,
+            medication_name: med.name,
+            prescription_start: med.startDate?.split('T')[0],
+            prescription_end: med.endDate?.split('T')[0] || null,
+          });
+        }
+      });
+    }
+
+    if (data.pastInjuries) {
+      data.pastInjuries.forEach((injury: any, idx: number) => {
+        if (injury.name && injury.date) {
+          events.push({
+            id: `guest-injury-${idx}`,
+            event_type: 'injury',
+            title: injury.name,
+            event_date: injury.date,
+            description: injury.name,
+          });
+        }
+      });
+    }
+
+    if (data.pastSurgeries) {
+      data.pastSurgeries.forEach((surgery: any, idx: number) => {
+        if (surgery.name && surgery.date) {
+          events.push({
+            id: `guest-surgery-${idx}`,
+            event_type: 'surgery',
+            title: surgery.name,
+            event_date: surgery.date,
+            description: surgery.name,
+          });
+        }
+      });
+    }
+
+    if (data.pastInflammations) {
+      data.pastInflammations.forEach((inflammation: any, idx: number) => {
+        if (inflammation.name && inflammation.date) {
+          events.push({
+            id: `guest-inflammation-${idx}`,
+            event_type: 'illness',
+            title: inflammation.name,
+            event_date: inflammation.date,
+            description: inflammation.name,
+            severity: 'high',
+          });
+        }
+      });
+    }
+
+    return events.length > 0 ? events : getDefaultGuestEvents();
+  } catch (e) {
+    console.error('Error parsing guest profile:', e);
+    return getDefaultGuestEvents();
+  }
+};
+
+// Default guest events (your personal information)
+const getDefaultGuestEvents = (): TimelineEvent[] => [
   {
     id: 'guest-1',
     event_type: 'medication',
     title: 'Suprax (Antibiotic)',
-    event_date: new Date(2025, 9, 6, 9, 0, 0).toISOString(), // Oct is 9 index
+    event_date: new Date(2025, 9, 6, 9, 0, 0).toISOString(),
     medication_name: 'Suprax',
     prescription_start: '2025-10-06',
     prescription_end: '2025-10-12',
     description: 'Course of antibiotic',
-    severity: null,
   },
-  // Injuries
   {
     id: 'guest-2',
     event_type: 'injury',
@@ -47,7 +120,6 @@ export const getGuestEvents = (): TimelineEvent[] => [
     event_date: new Date(2025, 9, 26, 14, 0, 0).toISOString(),
     description: 'Right shoulder Labrum tear',
   },
-  // Surgery
   {
     id: 'guest-5',
     event_type: 'surgery',
@@ -55,7 +127,6 @@ export const getGuestEvents = (): TimelineEvent[] => [
     event_date: new Date(2025, 2, 10, 8, 0, 0).toISOString(),
     description: 'Deviated Septum Surgery',
   },
-  // Inflammation/illness
   {
     id: 'guest-6',
     event_type: 'illness',
@@ -65,6 +136,8 @@ export const getGuestEvents = (): TimelineEvent[] => [
     severity: 'high',
   },
 ];
+
+export const getGuestEvents = (): TimelineEvent[] => getGuestEventsFromStorage();
 
 export const getGuestEventDates = (): Date[] =>
   getGuestEvents().map((e) => new Date(e.event_date));
