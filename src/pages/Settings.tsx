@@ -38,7 +38,7 @@ const Settings = () => {
     endDate: Date | undefined;
   }>>([
     {
-      name: "Suprax",
+      name: "Suprax (Antibiotic)",
       startDate: new Date(2025, 9, 6), // October 6, 2025
       endDate: new Date(2025, 9, 12), // 6 days later (October 12, 2025)
     }
@@ -67,7 +67,7 @@ const Settings = () => {
     date: Date | undefined;
   }>>([
     {
-      name: "Deviated septum",
+      name: "Deviated Septum Surgery",
       date: new Date(2025, 2, 10), // March 10, 2025
     }
   ]);
@@ -75,10 +75,15 @@ const Settings = () => {
   const [pastInflammations, setPastInflammations] = useState<Array<{
     name: string;
     date: Date | undefined;
-  }>>([]);
+  }>>([
+    {
+      name: "Diverticulitis - ER Visit",
+      date: new Date(2025, 9, 6), // October 6, 2025
+    }
+  ]);
 
 
-  const [goals, setGoals] = useState("");
+  const [goals, setGoals] = useState("Maintain mobility & flexibility\nMaintenance plus gaining muscle weight");
 
   const addPastMedication = () => {
     setPastMedications([...pastMedications, { name: "", startDate: undefined, endDate: undefined }]);
