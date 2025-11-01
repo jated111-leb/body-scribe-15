@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarView } from "@/components/dashboard/CalendarView";
 import { TimelineView } from "@/components/dashboard/TimelineView";
+import { ProfileSummary } from "@/components/dashboard/ProfileSummary";
 import { ChatSidebar } from "@/components/dashboard/ChatSidebar";
 import { QuickLogDialog } from "@/components/dashboard/QuickLogDialog";
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,9 @@ const Dashboard = () => {
                 </Button>
               </div>
             </div>
+
+            {/* Profile Summary */}
+            <ProfileSummary />
 
             {/* Calendar */}
             <CalendarView 
