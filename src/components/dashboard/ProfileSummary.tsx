@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Activity, Target, Heart } from "lucide-react";
+import { User, Activity, Target, Heart, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -141,12 +141,15 @@ export const ProfileSummary = () => {
         {/* Health Conditions */}
         {profile.health_conditions && profile.health_conditions.length > 0 && (
           <div className="space-y-2">
-            <h4 className="font-semibold text-sm">Health Conditions</h4>
-            <div className="flex flex-wrap gap-2">
+            <h4 className="font-semibold text-sm flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 text-yellow-600" />
+              Health Notes
+            </h4>
+            <div className="space-y-1">
               {profile.health_conditions.map((condition: string, idx: number) => (
-                <Badge key={idx} variant="outline" className="text-xs">
+                <div key={idx} className="text-sm bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 rounded-md p-2">
                   {condition}
-                </Badge>
+                </div>
               ))}
             </div>
           </div>

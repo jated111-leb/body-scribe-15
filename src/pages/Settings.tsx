@@ -27,7 +27,7 @@ const Settings = () => {
   });
 
   const [health, setHealth] = useState({
-    conditions: "",
+    conditions: "Monitor sugar intake - High sugar level in last blood test (borderline)",
     medications: "",
     supplements: "Vitamin D3 & K2 (NOW brand) - 1000 IU D3 + 45 mcg K2, 1 capsule daily, started 1 August 2025\nZinc Picolinate (NOW brand) - 50 mg, 1 capsule daily, started 1 August 2025\nFolic Acid - 5 mg, twice per week (Tuesday & Friday), started 1 August 2025\nCreatine (Vitobest Creapure) - 5 g, once daily, started 9 September 2025",
     allergies: "",
