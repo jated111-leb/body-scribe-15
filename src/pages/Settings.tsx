@@ -192,18 +192,86 @@ const Settings = () => {
 
       if (profileError) throw profileError;
 
-      // Save medical history to localStorage (until we create dedicated tables)
-      localStorage.setItem("medicalHistory", JSON.stringify({
-        supplements: health.supplements,
-        pastMedications,
-        pastInjuries,
-        pastSurgeries,
-        pastInflammations,
-      }));
+      // Create timeline events for medical history
+      const timelineEvents = [];
+
+      // Add past medications as events
+      for (const med of pastMedications) {
+        if (med.name && med.startDate) {
+          timelineEvents.push({
+            user_id: user.id,
+            event_type: 'medication',
+            title: med.name,
+            event_date: med.startDate.toISOString(),
+            medication_name: med.name,
+            prescription_start: med.startDate.toISOString().split('T')[0],
+            prescription_end: med.endDate ? med.endDate.toISOString().split('T')[0] : null,
+          });
+        }
+      }
+
+      // Add past injuries as events
+      for (const injury of pastInjuries) {
+        if (injury.name && injury.date) {
+          timelineEvents.push({
+            user_id: user.id,
+            event_type: 'injury',
+            title: injury.name,
+            event_date: injury.date.toISOString(),
+            description: injury.name,
+          });
+        }
+      }
+
+      // Add past surgeries as events
+      for (const surgery of pastSurgeries) {
+        if (surgery.name && surgery.date) {
+          timelineEvents.push({
+            user_id: user.id,
+            event_type: 'surgery',
+            title: surgery.name,
+            event_date: surgery.date.toISOString(),
+            description: surgery.name,
+          });
+        }
+      }
+
+      // Add past inflammations as events
+      for (const inflammation of pastInflammations) {
+        if (inflammation.name && inflammation.date) {
+          timelineEvents.push({
+            user_id: user.id,
+            event_type: 'illness',
+            title: inflammation.name,
+            event_date: inflammation.date.toISOString(),
+            description: inflammation.name,
+            severity: 'high',
+          });
+        }
+      }
+
+      // Delete existing medical history events before inserting new ones
+      await supabase
+        .from('timeline_events')
+        .delete()
+        .eq('user_id', user.id)
+        .in('event_type', ['medication', 'injury', 'surgery', 'illness']);
+
+      // Insert all timeline events
+      if (timelineEvents.length > 0) {
+        const { error: eventsError } = await supabase
+          .from('timeline_events')
+          .insert(timelineEvents);
+
+        if (eventsError) throw eventsError;
+      }
+
+      // Save supplements to localStorage (as they're ongoing)
+      localStorage.setItem("supplements", health.supplements);
 
       toast({
         title: "Profile saved!",
-        description: "Your health information has been updated.",
+        description: "Your health information and timeline have been updated.",
       });
     } catch (error) {
       console.error("Error saving profile:", error);
