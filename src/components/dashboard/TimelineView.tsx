@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
+import { getGuestEventsForRange } from "@/lib/demo";
 
 interface TimelineViewProps {
   selectedDate: Date;
@@ -20,8 +21,6 @@ export const TimelineView = ({ selectedDate }: TimelineViewProps) => {
   }, [selectedDate, user]);
 
   const loadEvents = async () => {
-    if (!user) return;
-    
     setLoading(true);
     try {
       // Get start and end of selected day
@@ -30,6 +29,16 @@ export const TimelineView = ({ selectedDate }: TimelineViewProps) => {
       
       const endOfDay = new Date(selectedDate);
       endOfDay.setHours(23, 59, 59, 999);
+
+      if (!user) {
+        const guest = getGuestEventsForRange(startOfDay, endOfDay).map(event => ({
+          ...event,
+          time: format(new Date(event.event_date), 'HH:mm'),
+          icon: getIconForType(event.event_type),
+        }));
+        setEvents(guest);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('timeline_events')

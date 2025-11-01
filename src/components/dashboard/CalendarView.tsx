@@ -3,6 +3,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getGuestEventDates } from "@/lib/demo";
 
 interface CalendarViewProps {
   selectedDate: Date;
@@ -18,7 +19,10 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
   }, [user]);
 
   const loadEventDates = async () => {
-    if (!user) return;
+    if (!user) {
+      setEventDates(getGuestEventDates());
+      return;
+    }
 
     const { data, error } = await supabase
       .from('timeline_events')
