@@ -239,7 +239,7 @@ export const ProfileSummary = () => {
               Alcohol-free Since: {formattedAlcoholFreeDate} - {alcoholFreeStreak} days streak
             </Badge>
             <Badge variant="secondary" className="text-xs bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400">
-              0 Processed Food Since: {formattedProcessedFoodFreeDate} - {processedFoodStreak} days streak
+              No processed food & sugar intake Since: {formattedProcessedFoodFreeDate} - {processedFoodStreak} days streak
             </Badge>
           </div>
         </div>
