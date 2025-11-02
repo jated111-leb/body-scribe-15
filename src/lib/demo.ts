@@ -1,7 +1,7 @@
 export type TimelineEvent = {
   id: string;
   user_id?: string | null;
-  event_type: 'medication' | 'injury' | 'surgery' | 'illness' | string;
+  event_type: 'medication' | 'injury' | 'surgery' | 'illness' | 'workout' | string;
   title: string;
   event_date: string; // ISO string
   description?: string | null;
@@ -9,6 +9,8 @@ export type TimelineEvent = {
   prescription_start?: string | null; // YYYY-MM-DD
   prescription_end?: string | null;   // YYYY-MM-DD
   severity?: string | null;
+  activity_type?: string | null;
+  duration?: number | null;
 };
 
 // Get guest events from localStorage or defaults
@@ -75,6 +77,23 @@ const getGuestEventsFromStorage = (): TimelineEvent[] => {
             event_date: inflammation.date,
             description: inflammation.name,
             severity: 'high',
+          });
+        }
+      });
+    }
+
+    if (data.workoutActivities) {
+      data.workoutActivities.forEach((workout: any, idx: number) => {
+        if (workout.activityType && workout.date) {
+          const durationInMinutes = workout.duration ? parseInt(workout.duration.replace(/[^\d]/g, '')) * 60 : null;
+          events.push({
+            id: `guest-workout-${idx}`,
+            event_type: 'workout',
+            title: workout.activityType,
+            event_date: workout.date,
+            activity_type: workout.activityType,
+            duration: durationInMinutes,
+            description: workout.location,
           });
         }
       });
