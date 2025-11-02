@@ -59,20 +59,13 @@ const Dashboard = () => {
         {/* Left: Calendar + Timeline */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-5xl mx-auto space-y-8">
-            {/* Header with Profile Avatar */}
-            <div className="flex justify-between items-start">
-              <div className="flex items-center gap-4">
-                <ProfileAvatar 
-                  avatarUrl={profile?.avatar_url}
-                  fullName={profile?.full_name}
-                  onAvatarUpdate={loadProfile}
-                />
-                <div>
-                  <h1 className="text-3xl font-bold">Your Health Timeline</h1>
-                  <p className="text-muted-foreground">
-                    Welcome to Life Tracker!
-                  </p>
-                </div>
+            {/* Header */}
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h1 className="text-3xl font-bold">Your Health Timeline</h1>
+                <p className="text-muted-foreground">
+                  Welcome to Life Tracker!
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <Button 
@@ -92,8 +85,17 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Profile Summary */}
-            <ProfileSummary />
+            {/* Profile Avatar and Summary */}
+            <div className="relative">
+              <div className="absolute left-[10%] -top-4 z-10">
+                <ProfileAvatar 
+                  avatarUrl={profile?.avatar_url}
+                  fullName={profile?.full_name}
+                  onAvatarUpdate={loadProfile}
+                />
+              </div>
+              <ProfileSummary />
+            </div>
 
             {/* Calendar */}
             <CalendarView 
