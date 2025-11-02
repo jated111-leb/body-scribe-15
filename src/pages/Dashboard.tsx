@@ -87,7 +87,7 @@ const Dashboard = () => {
 
             {/* Profile Avatar and Summary */}
             <div className="relative">
-              <div className="absolute left-[10%] -top-4 z-10">
+              <div className="absolute left-[10%] -top-24 z-10">
                 <ProfileAvatar 
                   avatarUrl={profile?.avatar_url}
                   fullName={profile?.full_name}

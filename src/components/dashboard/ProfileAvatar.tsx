@@ -82,19 +82,20 @@ export const ProfileAvatar = ({ avatarUrl, fullName, onAvatarUpdate }: ProfileAv
   };
 
   return (
-    <div className="relative group cursor-pointer z-10" onClick={handleAvatarClick}>
-      <Avatar className="h-32 w-32 border-4 border-background shadow-xl">
-        <AvatarImage src={avatarUrl || undefined} alt={fullName || 'User'} />
-        <AvatarFallback className="bg-primary/10 text-primary text-3xl font-semibold">
-          {getInitials()}
-        </AvatarFallback>
-      </Avatar>
-      
-      <div className="absolute inset-0 bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-        {uploading ? (
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent" />
-        ) : (
-          <Camera className="h-8 w-8 text-white" />
+    <div className="bg-card border border-border rounded-lg p-6 shadow-lg">
+      <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
+        <Avatar className="h-32 w-32 border-4 border-background shadow-xl">
+          <AvatarImage src={avatarUrl || undefined} alt={fullName || 'User'} />
+          <AvatarFallback className="bg-primary/10 text-primary text-3xl font-semibold">
+            {getInitials()}
+          </AvatarFallback>
+        </Avatar>
+        
+        <div className="absolute inset-0 bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          {uploading ? (
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent" />
+          ) : (
+            <Camera className="h-8 w-8 text-white" />
         )}
       </div>
 
@@ -106,6 +107,7 @@ export const ProfileAvatar = ({ avatarUrl, fullName, onAvatarUpdate }: ProfileAv
         onChange={handleFileChange}
         disabled={uploading}
       />
+      </div>
     </div>
   );
 };
