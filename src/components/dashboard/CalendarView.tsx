@@ -27,6 +27,7 @@ const getActivityEmoji = (activityType: string): string => {
 export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) => {
   const [eventsByDate, setEventsByDate] = useState<Map<string, TimelineEvent[]>>(new Map());
   const [doctorVisitDates, setDoctorVisitDates] = useState<Date[]>([]);
+  const [medicationEvents, setMedicationEvents] = useState<TimelineEvent[]>([]);
   const [alcoholFreeDate] = useState<Date>(new Date(2025, 8, 12)); // September 12, 2025
   const { user } = useAuth();
 
@@ -61,6 +62,7 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
       
       setEventsByDate(eventsMap);
       setDoctorVisitDates(doctorDates);
+      setMedicationEvents(guestEvents.filter(e => e.event_type === 'medication' && e.prescription_start && e.prescription_end));
       return;
     }
 
@@ -98,6 +100,7 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
     
     setEventsByDate(eventsMap);
     setDoctorVisitDates(doctorDates);
+    setMedicationEvents((data as any[]).filter(e => e.event_type === 'medication' && e.prescription_start && e.prescription_end) as TimelineEvent[]);
   };
 
   const renderDayContent = (date: Date) => {
@@ -106,7 +109,7 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
     const events = eventsByDate.get(dateKey) || [];
     
     // Check if this date falls within any medication's prescription period
-    const allEvents = Array.from(eventsByDate.values()).flat();
+    const allEvents = medicationEvents;
     const medicationsOnThisDay = allEvents.filter(event => {
       if (event.event_type === 'medication' && event.prescription_start && event.prescription_end) {
         // Only show if the current date is within the prescription range
