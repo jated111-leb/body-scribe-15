@@ -39,9 +39,9 @@ const Settings = () => {
     endDate: Date | undefined;
   }>>([
     {
-      name: "Suprax (Antibiotic)",
+      name: "Suprax (Antibiotic) - Prescribed by Dr. Ihab El Hajj for diverticulitis",
       startDate: new Date(2025, 9, 6), // October 6, 2025
-      endDate: new Date(2025, 9, 12), // 6 days later (October 12, 2025)
+      endDate: new Date(2025, 9, 11), // October 11, 2025
     }
   ]);
 
@@ -50,15 +50,15 @@ const Settings = () => {
     date: Date | undefined;
   }>>([
     {
-      name: "Right Hip labrum tear",
+      name: "Right Hip Labral Tear - Managed with 10 months of physiotherapy, mobility work, and rehabilitation. Regained ~80% function",
       date: new Date(2022, 9, 20), // October 20, 2022
     },
     {
-      name: "Right shoulder discomfort",
+      name: "Right shoulder discomfort - Mild pain during basketball",
       date: new Date(2025, 9, 19), // October 19, 2025
     },
     {
-      name: "Right shoulder Labrum tear",
+      name: "Right shoulder pain - Significant pain & limited mobility after basketball (possible strain/inflammation)",
       date: new Date(2025, 9, 26), // October 26, 2025
     }
   ]);
@@ -68,8 +68,8 @@ const Settings = () => {
     date: Date | undefined;
   }>>([
     {
-      name: "Deviated Septum Surgery",
-      date: new Date(2025, 2, 10), // March 10, 2025
+      name: "Lamina & Deviated Septum correction - Full recovery achieved",
+      date: new Date(2022, 2, 10), // March 10, 2022
     }
   ]);
 
@@ -78,8 +78,16 @@ const Settings = () => {
     date: Date | undefined;
   }>>([
     {
-      name: "Diverticulitis - ER Visit",
-      date: new Date(2025, 9, 6), // October 6, 2025
+      name: "Diverticulitis - ER Visit (mild lower abdominal pain, confirmed by CT scan)",
+      date: new Date(2025, 8, 19), // September 19, 2025
+    },
+    {
+      name: "Follow-up with Dr. Laurence for diverticulitis monitoring",
+      date: new Date(2025, 8, 29), // September 29, 2025
+    },
+    {
+      name: "Consultation with Dr. Ihab El Hajj for diverticulitis",
+      date: new Date(2025, 9, 1), // October 1, 2025
     }
   ]);
 
