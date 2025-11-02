@@ -1,18 +1,50 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Activity, Target, Heart, AlertCircle } from "lucide-react";
+import { User, Activity, Target, Heart, AlertCircle, Dumbbell } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getGuestEvents } from "@/lib/demo";
 
 export const ProfileSummary = () => {
   const [profile, setProfile] = useState<any>(null);
+  const [activities, setActivities] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
   useEffect(() => {
     loadProfile();
+    loadActivities();
   }, [user]);
+
+  const loadActivities = async () => {
+    try {
+      if (!user) {
+        // Load from localStorage for guest
+        const guestEvents = getGuestEvents();
+        const workoutActivities = guestEvents
+          .filter(event => event.event_type === 'workout' && event.activity_type)
+          .map(event => event.activity_type!)
+          .filter((value, index, self) => self.indexOf(value) === index); // unique values
+        setActivities(workoutActivities);
+      } else {
+        // Load from database for authenticated user
+        const { data, error } = await supabase
+          .from('timeline_events')
+          .select('activity_type')
+          .eq('user_id', user.id)
+          .eq('event_type', 'workout')
+          .not('activity_type', 'is', null);
+
+        if (error) throw error;
+        
+        const uniqueActivities = [...new Set(data.map(item => item.activity_type))].filter(Boolean) as string[];
+        setActivities(uniqueActivities);
+      }
+    } catch (error) {
+      console.error('Error loading activities:', error);
+    }
+  };
 
   const loadProfile = async () => {
     setLoading(true);
@@ -116,6 +148,23 @@ export const ProfileSummary = () => {
                   +{profile.medications.length - 3} more
                 </Badge>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Activities/Sports */}
+        {activities && activities.length > 0 && (
+          <div className="space-y-2">
+            <h4 className="font-semibold text-sm flex items-center gap-2">
+              <Dumbbell className="h-4 w-4" />
+              Activities
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {activities.map((activity, idx) => (
+                <Badge key={idx} variant="outline" className="text-xs">
+                  {activity}
+                </Badge>
+              ))}
             </div>
           </div>
         )}
