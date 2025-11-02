@@ -207,19 +207,6 @@ export const ProfileSummary = () => {
           </div>
         )}
 
-        {/* Achievements */}
-        <div className="space-y-2">
-          <h4 className="font-semibold text-sm flex items-center gap-2">
-            <Target className="h-4 w-4 text-green-600" />
-            Achievements
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary" className="text-xs bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400">
-              Alcohol-free Since: {formattedAlcoholFreeDate} - {alcoholFreeStreak} days streak
-            </Badge>
-          </div>
-        </div>
-
         {/* Health Conditions */}
         {profile.health_conditions && profile.health_conditions.length > 0 && (
           <div className="space-y-2">
@@ -236,6 +223,19 @@ export const ProfileSummary = () => {
             </div>
           </div>
         )}
+
+        {/* Achievements */}
+        <div className="space-y-2">
+          <h4 className="font-semibold text-sm flex items-center gap-2">
+            <Target className="h-4 w-4 text-green-600" />
+            Achievements
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary" className="text-xs bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400">
+              Alcohol-free Since: {formattedAlcoholFreeDate} - {alcoholFreeStreak} days streak
+            </Badge>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
