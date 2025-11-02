@@ -26,7 +26,6 @@ export const ProfileSummary = () => {
         const workoutActivities = guestEvents
           .filter(event => event.event_type === 'workout' && event.activity_type)
           .map(event => event.activity_type!)
-          .filter(activity => !activity.toLowerCase().includes('pt'))
           .filter((value, index, self) => self.indexOf(value) === index); // unique values
         setActivities(workoutActivities);
       } else {
@@ -40,9 +39,7 @@ export const ProfileSummary = () => {
 
         if (error) throw error;
         
-        const uniqueActivities = [...new Set(data.map(item => item.activity_type))]
-          .filter(Boolean)
-          .filter(activity => !activity.toLowerCase().includes('pt')) as string[];
+        const uniqueActivities = [...new Set(data.map(item => item.activity_type))].filter(Boolean) as string[];
         setActivities(uniqueActivities);
       }
     } catch (error) {
