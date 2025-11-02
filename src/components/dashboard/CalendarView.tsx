@@ -113,7 +113,7 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
     
     // Combine events from this specific day with medications that span this day
     // Filter out medications from events to avoid duplication
-    const nonMedicationEvents = events.filter(e => e.event_type !== 'medication' || !e.prescription_start);
+    const nonMedicationEvents = events.filter(e => e.event_type !== 'medication');
     const allDayEvents = [...nonMedicationEvents, ...medicationsOnThisDay];
     
     // Get unique activity emojis for this date
