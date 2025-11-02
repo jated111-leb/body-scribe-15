@@ -112,10 +112,10 @@ const getDefaultGuestEvents = (): TimelineEvent[] => [
     id: 'guest-1',
     event_type: 'medication',
     title: 'Suprax (Antibiotic)',
-    event_date: new Date(2025, 11, 6, 9, 0, 0).toISOString(),
+    event_date: new Date(2025, 9, 6, 9, 0, 0).toISOString(),
     medication_name: 'Suprax',
-    prescription_start: '2025-12-06',
-    prescription_end: '2025-12-11',
+    prescription_start: '2025-10-06',
+    prescription_end: '2025-10-12',
     description: 'Taking Suprax for 6 days',
   },
   {
