@@ -91,6 +91,37 @@ const Settings = () => {
     }
   ]);
 
+  const [workoutActivities, setWorkoutActivities] = useState<Array<{
+    activityType: string;
+    date: Date | undefined;
+    duration: string;
+    location: string;
+  }>>([
+    // September 2025
+    { activityType: "PT Training", date: new Date(2025, 8, 9), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
+    { activityType: "PT Session", date: new Date(2025, 8, 11), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
+    { activityType: "Yoga", date: new Date(2025, 8, 15), duration: "1h30", location: "Zen Corner – Mahmoud" },
+    { activityType: "PT Session", date: new Date(2025, 8, 16), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
+    { activityType: "Yoga", date: new Date(2025, 8, 22), duration: "1h30", location: "Zen Corner – Mahmoud" },
+    { activityType: "PT Session", date: new Date(2025, 8, 23), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
+    { activityType: "PT Session", date: new Date(2025, 8, 25), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
+    { activityType: "Basketball", date: new Date(2025, 8, 28), duration: "1h30", location: "—" },
+    { activityType: "PT Session", date: new Date(2025, 8, 30), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
+    // October 2025
+    { activityType: "PT Session", date: new Date(2025, 9, 2), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
+    { activityType: "Basketball", date: new Date(2025, 9, 5), duration: "1h30", location: "—" },
+    { activityType: "Yoga", date: new Date(2025, 9, 6), duration: "1h30", location: "Zen Corner" },
+    { activityType: "PT Session", date: new Date(2025, 9, 7), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
+    { activityType: "Yoga", date: new Date(2025, 9, 8), duration: "1h30", location: "Humm – Mahadevi" },
+    { activityType: "PT Session", date: new Date(2025, 9, 10), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
+    { activityType: "Basketball", date: new Date(2025, 9, 12), duration: "1h30", location: "—" },
+    { activityType: "Yoga", date: new Date(2025, 9, 13), duration: "1h30", location: "Zen Corner – Mahmoud" },
+    { activityType: "PT Session", date: new Date(2025, 9, 14), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
+    { activityType: "Tennis", date: new Date(2025, 9, 15), duration: "1h", location: "Yarze – Defense Ministry (First Session)" },
+    { activityType: "Basketball", date: new Date(2025, 9, 19), duration: "1h30", location: "— (Right shoulder discomfort during game)" },
+    { activityType: "PT Session", date: new Date(2025, 9, 22), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
+    { activityType: "Basketball", date: new Date(2025, 9, 26), duration: "1h30", location: "— (Significant right shoulder pain, limited mobility)" },
+  ]);
 
   const [goals, setGoals] = useState("Maintain mobility & flexibility\nMaintain weight or lean muscle gain\nActivity Level: 5-6 sessions/week\nBMR: 1661 kcal/day\nMaintenance Calories: ~2475 kcal/day\nGoal Calories (Muscle Gain): ~2875 kcal/day\nAlcohol-Free Since: 12 Sep 2025");
 
@@ -150,6 +181,20 @@ const Settings = () => {
     setPastInflammations(updated);
   };
 
+  const addWorkoutActivity = () => {
+    setWorkoutActivities([...workoutActivities, { activityType: "", date: undefined, duration: "", location: "" }]);
+  };
+
+  const removeWorkoutActivity = (index: number) => {
+    setWorkoutActivities(workoutActivities.filter((_, i) => i !== index));
+  };
+
+  const updateWorkoutActivity = (index: number, field: string, value: any) => {
+    const updated = [...workoutActivities];
+    updated[index] = { ...updated[index], [field]: value };
+    setWorkoutActivities(updated);
+  };
+
 
   const handleSave = async () => {
     try {
@@ -191,6 +236,12 @@ const Settings = () => {
           pastInflammations: pastInflammations.map(inf => ({
             name: inf.name,
             date: inf.date?.toISOString(),
+          })),
+          workoutActivities: workoutActivities.map(w => ({
+            activityType: w.activityType,
+            date: w.date?.toISOString(),
+            duration: w.duration,
+            location: w.location,
           })),
           bmr,
         };
@@ -279,11 +330,25 @@ const Settings = () => {
         }
       }
 
+      for (const workout of workoutActivities) {
+        if (workout.activityType && workout.date) {
+          timelineEvents.push({
+            user_id: user.id,
+            event_type: 'workout',
+            title: workout.activityType,
+            event_date: workout.date.toISOString(),
+            activity_type: workout.activityType,
+            duration: workout.duration ? parseInt(workout.duration.replace(/[^\d]/g, '')) * 60 : null,
+            description: workout.location,
+          });
+        }
+      }
+
       await supabase
         .from('timeline_events')
         .delete()
         .eq('user_id', user.id)
-        .in('event_type', ['medication', 'injury', 'surgery', 'illness']);
+        .in('event_type', ['medication', 'injury', 'surgery', 'illness', 'workout']);
 
       if (timelineEvents.length > 0) {
         const { error: eventsError } = await supabase
@@ -750,6 +815,85 @@ const Settings = () => {
           </CardContent>
         </Card>
 
+        {/* Workout Profile */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Workout Profile</CardTitle>
+                <CardDescription>Track your training and physical activities</CardDescription>
+              </div>
+              <Button onClick={addWorkoutActivity} size="sm" variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                Add
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {workoutActivities.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No workout activities added. Click "Add" to record training sessions.
+              </p>
+            ) : (
+              workoutActivities.map((workout, index) => (
+                <div key={index} className="flex gap-2 items-start border rounded-lg p-4">
+                  <div className="flex-1 space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        placeholder="Activity type (e.g., PT Session, Yoga)"
+                        value={workout.activityType}
+                        onChange={(e) => updateWorkoutActivity(index, "activityType", e.target.value)}
+                      />
+                      <Input
+                        placeholder="Duration (e.g., 1h, 1h30)"
+                        value={workout.duration}
+                        onChange={(e) => updateWorkoutActivity(index, "duration", e.target.value)}
+                      />
+                    </div>
+                    <Input
+                      placeholder="Location / Coach"
+                      value={workout.location}
+                      onChange={(e) => updateWorkoutActivity(index, "location", e.target.value)}
+                    />
+                    <div className="space-y-2">
+                      <Label className="text-xs">Workout Date</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !workout.date && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {workout.date ? format(workout.date, "PP") : "Pick date"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 z-50 bg-popover" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={workout.date}
+                            onSelect={(date) => updateWorkoutActivity(index, "date", date)}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeWorkoutActivity(index)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
 
         {/* Health Goals */}
         <Card>
