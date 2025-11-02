@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getGuestEvents } from "@/lib/demo";
-import { differenceInDays } from "date-fns";
+import { differenceInDays, format } from "date-fns";
 
 export const ProfileSummary = () => {
   const [profile, setProfile] = useState<any>(null);
@@ -66,7 +66,7 @@ export const ProfileSummary = () => {
             weight: data.profile?.weight,
             bmr: data.bmr,
             medications: data.health?.supplements?.split('\n').filter(Boolean) || [],
-            goals: data.goals?.split('\n').filter(Boolean) || [],
+            goals: data.goals?.split('\n').filter(Boolean).filter((goal: string) => !goal.toLowerCase().includes('alcohol')) || [],
             health_conditions: data.health?.conditions?.split(',').map((s: string) => s.trim()).filter(Boolean) || [],
           });
         }
@@ -93,6 +93,7 @@ export const ProfileSummary = () => {
 
   const alcoholFreeDate = new Date(2025, 8, 12); // September 12, 2025
   const alcoholFreeStreak = differenceInDays(new Date(), alcoholFreeDate);
+  const formattedAlcoholFreeDate = format(alcoholFreeDate, 'd MMM yyyy');
 
   return (
     <Card>
@@ -203,7 +204,7 @@ export const ProfileSummary = () => {
           </h4>
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary" className="text-xs bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400">
-              Alcohol-free {alcoholFreeStreak} days
+              Alcohol-free Since: {formattedAlcoholFreeDate} - {alcoholFreeStreak} days streak
             </Badge>
           </div>
         </div>
@@ -215,11 +216,11 @@ export const ProfileSummary = () => {
               <AlertCircle className="h-4 w-4 text-yellow-600" />
               Health Notes
             </h4>
-            <div className="space-y-1">
+            <div className="flex flex-wrap gap-2">
               {profile.health_conditions.map((condition: string, idx: number) => (
-                <div key={idx} className="text-sm bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 rounded-md p-2">
+                <Badge key={idx} variant="outline" className="text-xs bg-yellow-50 dark:bg-yellow-950/20 border-yellow-200 dark:border-yellow-900 text-yellow-700 dark:text-yellow-400">
                   {condition}
-                </div>
+                </Badge>
               ))}
             </div>
           </div>
