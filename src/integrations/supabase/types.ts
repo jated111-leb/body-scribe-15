@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           age: number | null
           allergies: string[] | null
+          avatar_url: string | null
           bmr: number | null
           created_at: string | null
           full_name: string | null
@@ -33,6 +34,7 @@ export type Database = {
         Insert: {
           age?: number | null
           allergies?: string[] | null
+          avatar_url?: string | null
           bmr?: number | null
           created_at?: string | null
           full_name?: string | null
@@ -48,6 +50,7 @@ export type Database = {
         Update: {
           age?: number | null
           allergies?: string[] | null
+          avatar_url?: string | null
           bmr?: number | null
           created_at?: string | null
           full_name?: string | null

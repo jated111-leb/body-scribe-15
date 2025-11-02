@@ -5,6 +5,7 @@ import { TimelineView } from "@/components/dashboard/TimelineView";
 import { ProfileSummary } from "@/components/dashboard/ProfileSummary";
 import { ChatSidebar } from "@/components/dashboard/ChatSidebar";
 import { QuickLogDialog } from "@/components/dashboard/QuickLogDialog";
+import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
 import { Button } from "@/components/ui/button";
 import { Plus, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,11 +20,19 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (user) {
+      loadProfile();
+    }
+  }, [user]);
+
   const loadProfile = async () => {
+    if (!user) return;
+    
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
-      .eq("id", user?.id)
+      .eq("id", user.id)
       .single();
 
     if (error) {
@@ -50,13 +59,20 @@ const Dashboard = () => {
         {/* Left: Calendar + Timeline */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-5xl mx-auto space-y-8">
-            {/* Header */}
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-3xl font-bold">Your Health Timeline</h1>
-                <p className="text-muted-foreground">
-                  Welcome to Life Tracker!
-                </p>
+            {/* Header with Profile Avatar */}
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-4">
+                <ProfileAvatar 
+                  avatarUrl={profile?.avatar_url}
+                  fullName={profile?.full_name}
+                  onAvatarUpdate={loadProfile}
+                />
+                <div>
+                  <h1 className="text-3xl font-bold">Your Health Timeline</h1>
+                  <p className="text-muted-foreground">
+                    Welcome to Life Tracker!
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <Button 
