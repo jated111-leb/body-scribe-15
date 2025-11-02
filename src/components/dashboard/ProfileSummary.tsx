@@ -105,6 +105,10 @@ export const ProfileSummary = () => {
   const alcoholFreeDate = new Date(2025, 8, 12); // September 12, 2025
   const alcoholFreeStreak = differenceInDays(new Date(), alcoholFreeDate);
   const formattedAlcoholFreeDate = format(alcoholFreeDate, 'd MMM yyyy');
+  
+  const processedFoodFreeDate = new Date(2025, 8, 12); // September 12, 2025
+  const processedFoodStreak = differenceInDays(new Date(), processedFoodFreeDate);
+  const formattedProcessedFoodFreeDate = format(processedFoodFreeDate, 'd MMM yyyy');
 
   return (
     <Card>
@@ -233,6 +237,9 @@ export const ProfileSummary = () => {
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary" className="text-xs bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400">
               Alcohol-free Since: {formattedAlcoholFreeDate} - {alcoholFreeStreak} days streak
+            </Badge>
+            <Badge variant="secondary" className="text-xs bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400">
+              0 Processed Food Since: {formattedProcessedFoodFreeDate} - {processedFoodStreak} days streak
             </Badge>
           </div>
         </div>
