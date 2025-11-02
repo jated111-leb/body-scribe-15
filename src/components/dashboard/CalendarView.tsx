@@ -45,7 +45,10 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
         if (!eventsMap.has(dateKey)) {
           eventsMap.set(dateKey, []);
         }
-        eventsMap.get(dateKey)?.push(event);
+        // Skip pushing medication events; we'll render them via prescription ranges to avoid timezone issues
+        if (event.event_type !== 'medication') {
+          eventsMap.get(dateKey)?.push(event);
+        }
         
         // Check if it's a doctor visit or ER visit (illness type with ER/doctor/visit keywords)
         if (event.event_type === 'illness' || event.event_type === 'doctor_visit' || 
@@ -79,7 +82,10 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
       if (!eventsMap.has(dateKey)) {
         eventsMap.set(dateKey, []);
       }
-      eventsMap.get(dateKey)?.push(event as TimelineEvent);
+      // Skip pushing medication events; render via prescription ranges instead
+      if (event.event_type !== 'medication') {
+        eventsMap.get(dateKey)?.push(event as TimelineEvent);
+      }
       
       // Check if it's a doctor visit or ER visit
       if (event.event_type === 'illness' || event.event_type === 'doctor_visit' ||
