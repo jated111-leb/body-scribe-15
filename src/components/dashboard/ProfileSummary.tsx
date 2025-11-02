@@ -25,7 +25,14 @@ export const ProfileSummary = () => {
         const guestEvents = getGuestEvents();
         const workoutActivities = guestEvents
           .filter(event => event.event_type === 'workout' && event.activity_type)
-          .map(event => event.activity_type!)
+          .map(event => {
+            const activity = event.activity_type!;
+            // Normalize PT activities
+            if (activity.toLowerCase().includes('pt') || activity.toLowerCase().includes('pr training')) {
+              return 'PT Training';
+            }
+            return activity;
+          })
           .filter((value, index, self) => self.indexOf(value) === index); // unique values
         setActivities(workoutActivities);
       } else {
@@ -39,7 +46,14 @@ export const ProfileSummary = () => {
 
         if (error) throw error;
         
-        const uniqueActivities = [...new Set(data.map(item => item.activity_type))].filter(Boolean) as string[];
+        const uniqueActivities = [...new Set(data.map(item => {
+          const activity = item.activity_type;
+          // Normalize PT activities
+          if (activity.toLowerCase().includes('pt') || activity.toLowerCase().includes('pr training')) {
+            return 'PT Training';
+          }
+          return activity;
+        }))].filter(Boolean) as string[];
         setActivities(uniqueActivities);
       }
     } catch (error) {
