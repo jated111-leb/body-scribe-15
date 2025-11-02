@@ -25,6 +25,7 @@ export const ProfileSummary = () => {
         const workoutActivities = guestEvents
           .filter(event => event.event_type === 'workout' && event.activity_type)
           .map(event => event.activity_type!)
+          .filter(activity => !activity.toLowerCase().includes('pt'))
           .filter((value, index, self) => self.indexOf(value) === index); // unique values
         setActivities(workoutActivities);
       } else {
@@ -38,7 +39,9 @@ export const ProfileSummary = () => {
 
         if (error) throw error;
         
-        const uniqueActivities = [...new Set(data.map(item => item.activity_type))].filter(Boolean) as string[];
+        const uniqueActivities = [...new Set(data.map(item => item.activity_type))]
+          .filter(Boolean)
+          .filter(activity => !activity.toLowerCase().includes('pt')) as string[];
         setActivities(uniqueActivities);
       }
     } catch (error) {
@@ -176,16 +179,30 @@ export const ProfileSummary = () => {
               <Target className="h-4 w-4" />
               Goals
             </h4>
-            <div className="space-y-1">
-              {profile.goals.map((goal: string, idx: number) => (
-                <div key={idx} className="text-sm text-muted-foreground flex items-center gap-2">
-                  <span className="text-primary">•</span>
-                  {goal}
-                </div>
-              ))}
+            <div className="flex flex-wrap gap-2">
+              {profile.goals
+                .filter((goal: string) => !goal.toLowerCase().includes('bmr'))
+                .map((goal: string, idx: number) => (
+                  <Badge key={idx} variant="outline" className="text-xs">
+                    {goal.replace('Maintain weight & lean muscle', 'Maintain lean muscle')}
+                  </Badge>
+                ))}
             </div>
           </div>
         )}
+
+        {/* Achievements */}
+        <div className="space-y-2">
+          <h4 className="font-semibold text-sm flex items-center gap-2">
+            <Target className="h-4 w-4 text-green-600" />
+            Achievements
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary" className="text-xs bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400">
+              🚫 Alcohol-free since Sep 12, 2025
+            </Badge>
+          </div>
+        </div>
 
         {/* Health Conditions */}
         {profile.health_conditions && profile.health_conditions.length > 0 && (
