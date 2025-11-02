@@ -21,8 +21,8 @@ const Settings = () => {
   const [profile, setProfile] = useState({
     name: "Elias",
     age: "36",
-    sex: "",
-    height: "176",
+    sex: "male",
+    height: "177",
     weight: "73",
   });
 
@@ -84,7 +84,7 @@ const Settings = () => {
   ]);
 
 
-  const [goals, setGoals] = useState("Maintain mobility & flexibility\nMaintenance plus gaining muscle weight");
+  const [goals, setGoals] = useState("Maintain mobility & flexibility\nMaintain weight or lean muscle gain\nActivity Level: 5-6 sessions/week\nBMR: 1661 kcal/day\nMaintenance Calories: ~2475 kcal/day\nGoal Calories (Muscle Gain): ~2875 kcal/day\nAlcohol-Free Since: 12 Sep 2025");
 
   const addPastMedication = () => {
     setPastMedications([...pastMedications, { name: "", startDate: undefined, endDate: undefined }]);
