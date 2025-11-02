@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { getGuestEvents } from "@/lib/demo";
+import { differenceInDays } from "date-fns";
 
 export const ProfileSummary = () => {
   const [profile, setProfile] = useState<any>(null);
@@ -89,6 +90,9 @@ export const ProfileSummary = () => {
 
   if (loading) return null;
   if (!profile) return null;
+
+  const alcoholFreeDate = new Date(2025, 8, 12); // September 12, 2025
+  const alcoholFreeStreak = differenceInDays(new Date(), alcoholFreeDate);
 
   return (
     <Card>
@@ -199,7 +203,7 @@ export const ProfileSummary = () => {
           </h4>
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary" className="text-xs bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400">
-              🚫 Alcohol-free since Sep 12, 2025
+              Alcohol-free {alcoholFreeStreak} days
             </Badge>
           </div>
         </div>
