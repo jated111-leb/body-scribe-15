@@ -3,7 +3,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { getGuestEventDates } from "@/lib/demo";
+import { getGuestEvents } from "@/lib/demo";
 
 interface CalendarViewProps {
   selectedDate: Date;
@@ -12,6 +12,8 @@ interface CalendarViewProps {
 
 export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) => {
   const [eventDates, setEventDates] = useState<Date[]>([]);
+  const [workoutDates, setWorkoutDates] = useState<Date[]>([]);
+  const [alcoholFreeDate, setAlcoholFreeDate] = useState<Date | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -20,13 +22,21 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
 
   const loadEventDates = async () => {
     if (!user) {
-      setEventDates(getGuestEventDates());
+      const guestEvents = getGuestEvents();
+      const allDates = guestEvents.map(e => new Date(e.event_date));
+      const workouts = guestEvents
+        .filter(e => e.event_type === 'workout')
+        .map(e => new Date(e.event_date));
+      
+      setEventDates(allDates);
+      setWorkoutDates(workouts);
+      setAlcoholFreeDate(new Date(2025, 8, 12)); // September 12, 2025
       return;
     }
 
     const { data, error } = await supabase
       .from('timeline_events')
-      .select('event_date')
+      .select('event_date, event_type')
       .eq('user_id', user.id);
 
     if (error) {
@@ -35,7 +45,13 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
     }
 
     const dates = data.map(event => new Date(event.event_date));
+    const workouts = data
+      .filter(event => event.event_type === 'workout')
+      .map(event => new Date(event.event_date));
+    
     setEventDates(dates);
+    setWorkoutDates(workouts);
+    setAlcoholFreeDate(new Date(2025, 8, 12)); // September 12, 2025
   };
 
   return (
@@ -51,9 +67,13 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
           className="rounded-md"
           modifiers={{
             hasEvent: eventDates,
+            workout: workoutDates,
+            alcoholFree: alcoholFreeDate ? [alcoholFreeDate] : [],
           }}
           modifiersClassNames={{
             hasEvent: "bg-primary/10 font-bold",
+            workout: "!bg-red-100 dark:!bg-red-950/30 font-bold",
+            alcoholFree: "!bg-yellow-100 dark:!bg-yellow-950/30 font-bold",
           }}
         />
       </CardContent>
