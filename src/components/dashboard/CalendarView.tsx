@@ -103,13 +103,8 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
     const allEvents = Array.from(eventsByDate.values()).flat();
     const medicationsOnThisDay = allEvents.filter(event => {
       if (event.event_type === 'medication' && event.prescription_start && event.prescription_end) {
-        const prescriptionStart = new Date(event.prescription_start);
-        const prescriptionEnd = new Date(event.prescription_end);
-        const currentDate = new Date(date);
-        currentDate.setHours(0, 0, 0, 0);
-        prescriptionStart.setHours(0, 0, 0, 0);
-        prescriptionEnd.setHours(0, 0, 0, 0);
-        return currentDate >= prescriptionStart && currentDate <= prescriptionEnd;
+        // Compare date strings directly to avoid timezone issues
+        return dateKey >= event.prescription_start && dateKey <= event.prescription_end;
       }
       return false;
     });
