@@ -103,14 +103,21 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
     const allEvents = Array.from(eventsByDate.values()).flat();
     const medicationsOnThisDay = allEvents.filter(event => {
       if (event.event_type === 'medication' && event.prescription_start && event.prescription_end) {
-        // Compare date strings directly to avoid timezone issues
-        return dateKey >= event.prescription_start && dateKey <= event.prescription_end;
+        // Only show if the current date is within the prescription range
+        const start = event.prescription_start;
+        const end = event.prescription_end;
+        return dateKey >= start && dateKey <= end;
       }
       return false;
     });
     
+    // Combine events from this specific day with medications that span this day
+    // Filter out medications from events to avoid duplication
+    const nonMedicationEvents = events.filter(e => e.event_type !== 'medication' || !e.prescription_start);
+    const allDayEvents = [...nonMedicationEvents, ...medicationsOnThisDay];
+    
     // Get unique activity emojis for this date
-    const emojis = [...events, ...medicationsOnThisDay]
+    const emojis = allDayEvents
       .map(event => {
         if (event.event_type === 'workout' && event.activity_type) {
           return getActivityEmoji(event.activity_type);
