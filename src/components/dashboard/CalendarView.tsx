@@ -99,8 +99,23 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
     const alcoholFreeDateKey = format(alcoholFreeDate, 'yyyy-MM-dd');
     const events = eventsByDate.get(dateKey) || [];
     
+    // Check if this date falls within any medication's prescription period
+    const allEvents = Array.from(eventsByDate.values()).flat();
+    const medicationsOnThisDay = allEvents.filter(event => {
+      if (event.event_type === 'medication' && event.prescription_start && event.prescription_end) {
+        const prescriptionStart = new Date(event.prescription_start);
+        const prescriptionEnd = new Date(event.prescription_end);
+        const currentDate = new Date(date);
+        currentDate.setHours(0, 0, 0, 0);
+        prescriptionStart.setHours(0, 0, 0, 0);
+        prescriptionEnd.setHours(0, 0, 0, 0);
+        return currentDate >= prescriptionStart && currentDate <= prescriptionEnd;
+      }
+      return false;
+    });
+    
     // Get unique activity emojis for this date
-    const emojis = events
+    const emojis = [...events, ...medicationsOnThisDay]
       .map(event => {
         if (event.event_type === 'workout' && event.activity_type) {
           return getActivityEmoji(event.activity_type);
