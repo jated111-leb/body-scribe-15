@@ -26,6 +26,7 @@ const getActivityEmoji = (activityType: string): string => {
 
 export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) => {
   const [eventsByDate, setEventsByDate] = useState<Map<string, TimelineEvent[]>>(new Map());
+  const [doctorVisitDates, setDoctorVisitDates] = useState<Date[]>([]);
   const [alcoholFreeDate] = useState<Date>(new Date(2025, 8, 12)); // September 12, 2025
   const { user } = useAuth();
 
@@ -37,6 +38,7 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
     if (!user) {
       const guestEvents = getGuestEvents();
       const eventsMap = new Map<string, TimelineEvent[]>();
+      const doctorDates: Date[] = [];
       
       guestEvents.forEach(event => {
         const dateKey = format(new Date(event.event_date), 'yyyy-MM-dd');
@@ -44,9 +46,18 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
           eventsMap.set(dateKey, []);
         }
         eventsMap.get(dateKey)?.push(event);
+        
+        // Check if it's a doctor visit or ER visit (illness type with ER/doctor/visit keywords)
+        if (event.event_type === 'illness' || event.event_type === 'doctor_visit' || 
+            event.title?.toLowerCase().includes('doctor') || 
+            event.title?.toLowerCase().includes('er') ||
+            event.title?.toLowerCase().includes('visit')) {
+          doctorDates.push(new Date(event.event_date));
+        }
       });
       
       setEventsByDate(eventsMap);
+      setDoctorVisitDates(doctorDates);
       return;
     }
 
@@ -61,15 +72,26 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
     }
 
     const eventsMap = new Map<string, TimelineEvent[]>();
+    const doctorDates: Date[] = [];
+    
     data.forEach(event => {
       const dateKey = format(new Date(event.event_date), 'yyyy-MM-dd');
       if (!eventsMap.has(dateKey)) {
         eventsMap.set(dateKey, []);
       }
       eventsMap.get(dateKey)?.push(event as TimelineEvent);
+      
+      // Check if it's a doctor visit or ER visit
+      if (event.event_type === 'illness' || event.event_type === 'doctor_visit' ||
+          event.title?.toLowerCase().includes('doctor') ||
+          event.title?.toLowerCase().includes('er') ||
+          event.title?.toLowerCase().includes('visit')) {
+        doctorDates.push(new Date(event.event_date));
+      }
     });
     
     setEventsByDate(eventsMap);
+    setDoctorVisitDates(doctorDates);
   };
 
   const renderDayContent = (date: Date) => {
@@ -116,6 +138,12 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
           selected={selectedDate}
           onSelect={(date) => date && onSelectDate(date)}
           className="rounded-md"
+          modifiers={{
+            doctorVisit: doctorVisitDates,
+          }}
+          modifiersClassNames={{
+            doctorVisit: "bg-blue-100 dark:bg-blue-950/30",
+          }}
           components={{
             DayContent: ({ date }) => renderDayContent(date)
           }}
