@@ -24,6 +24,18 @@ const getActivityEmoji = (activityType: string): string => {
   return '📝';
 };
 
+// Normalize to local YYYY-MM-DD to avoid timezone shifts
+const toLocalDateKey = (input: string | Date): string => {
+  if (typeof input === 'string') {
+    // If already a date string (YYYY-MM-DD), use directly
+    if (/^\d{4}-\d{2}-\d{2}$/.test(input)) return input;
+  }
+  const d = new Date(input);
+  if (isNaN(d.getTime())) return '';
+  // en-CA format yields YYYY-MM-DD in the user's local timezone
+  return d.toLocaleDateString('en-CA');
+};
+
 export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) => {
   const [eventsByDate, setEventsByDate] = useState<Map<string, TimelineEvent[]>>(new Map());
   const [doctorVisitDates, setDoctorVisitDates] = useState<Date[]>([]);
@@ -42,7 +54,7 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
       const doctorDates: Date[] = [];
       
       guestEvents.forEach(event => {
-        const dateKey = format(new Date(event.event_date), 'yyyy-MM-dd');
+        const dateKey = toLocalDateKey(event.event_date);
         if (!eventsMap.has(dateKey)) {
           eventsMap.set(dateKey, []);
         }
@@ -80,7 +92,7 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
     const doctorDates: Date[] = [];
     
     data.forEach(event => {
-      const dateKey = format(new Date(event.event_date), 'yyyy-MM-dd');
+      const dateKey = toLocalDateKey(event.event_date);
       if (!eventsMap.has(dateKey)) {
         eventsMap.set(dateKey, []);
       }
