@@ -90,7 +90,7 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
             title: "Workout Log",
             activity_type: normalizeWorkoutType(workoutData.type || 'aerobic'),
             duration: workoutData.duration ? parseInt(workoutData.duration) : null,
-            intensity: workoutData.intensity?.toLowerCase() || 'moderate',
+            intensity: workoutData.intensity?.toLowerCase() || 'medium',
           };
           break;
         case "med":
@@ -372,7 +372,7 @@ const WorkoutForm = ({ data, onChange }: { data: any; onChange: (data: any) => v
         >
           <option value="">Select intensity...</option>
           <option value="low">Low</option>
-          <option value="moderate">Moderate</option>
+          <option value="medium">Medium</option>
           <option value="high">High</option>
         </select>
       </div>
@@ -426,16 +426,18 @@ const SymptomForm = ({ data, onChange }: { data: any; onChange: (data: any) => v
       />
     </div>
     <div>
-      <Label htmlFor="symptom-severity">Severity (1-10)</Label>
-      <Input 
-        id="symptom-severity" 
-        type="number" 
-        min="1" 
-        max="10" 
-        placeholder="5" 
+      <Label htmlFor="symptom-severity">Severity</Label>
+      <select
+        id="symptom-severity"
+        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         value={data.severity}
         onChange={(e) => onChange({ ...data, severity: e.target.value })}
-      />
+      >
+        <option value="">Select severity...</option>
+        <option value="mild">Mild</option>
+        <option value="moderate">Moderate</option>
+        <option value="severe">Severe</option>
+      </select>
     </div>
     <div>
       <Label htmlFor="symptom-notes">Additional Notes</Label>
