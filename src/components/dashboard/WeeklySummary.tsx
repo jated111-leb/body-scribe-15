@@ -169,10 +169,10 @@ export const WeeklySummary = ({ userId }: WeeklySummaryProps) => {
           <div>
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              Weekly Health Summary
+              Your Week's Rhythm
             </CardTitle>
             <CardDescription>
-              AI-powered insights from your health data
+              Patterns and insights from your health signals
             </CardDescription>
           </div>
           
@@ -273,9 +273,9 @@ export const WeeklySummary = ({ userId }: WeeklySummaryProps) => {
         ) : (
           <div className="text-center py-8">
             <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Summary Yet</h3>
+            <h3 className="text-lg font-semibold mb-2">Understanding Awaits</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Generate an AI-powered summary of your health activities for this week
+              Aura will interpret this week's signals into clear, meaningful insights
             </p>
             <Button
               onClick={handleGenerateSummary}
@@ -285,12 +285,12 @@ export const WeeklySummary = ({ userId }: WeeklySummaryProps) => {
               {generating ? (
                 <>
                   <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
+                  Interpreting signals...
                 </>
               ) : (
                 <>
                   <Sparkles className="mr-2 h-4 w-4" />
-                  Generate Weekly Summary
+                  Generate Rhythm Summary
                 </>
               )}
             </Button>
