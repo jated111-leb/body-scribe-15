@@ -5,26 +5,44 @@ import { ArrowRight, Activity, Calendar, MessageSquare, TrendingUp } from "lucid
 import heroBg from "@/assets/hero-bg.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { role, loading } = useUserRole();
+  const [roleSelected, setRoleSelected] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!loading && user) {
-      if (!role) {
-        // User is authenticated but has no role
+    const checkRoleSelected = async () => {
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("role_selected")
+          .eq("id", user.id)
+          .single();
+        
+        setRoleSelected(data?.role_selected ?? false);
+      }
+    };
+
+    checkRoleSelected();
+  }, [user]);
+
+  useEffect(() => {
+    if (!loading && user && roleSelected !== null) {
+      // Only redirect to role-selection if user hasn't selected a role yet
+      if (!role && !roleSelected) {
         navigate("/role-selection");
       } else if (role === "dietician") {
         navigate("/dietician-dashboard");
-      } else {
+      } else if (role === "client") {
         navigate("/dashboard");
       }
     }
-  }, [user, role, loading, navigate]);
+  }, [user, role, loading, roleSelected, navigate]);
 
-  if (loading) {
+  if (loading || roleSelected === null) {
     return (
       <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
