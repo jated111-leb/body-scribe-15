@@ -129,12 +129,18 @@ const WORKOUT_TYPE_MAPPINGS: Record<string, CanonicalWorkoutType> = {
   'running': 'aerobic',
   'cycling': 'aerobic',
   'swimming': 'aerobic',
+  'rowing': 'aerobic',
+  'dancing': 'aerobic',
   
   'strength': 'strength',
   'weights': 'strength',
   'lifting': 'strength',
   'resistance': 'strength',
   'functional strength': 'strength',
+  'functional_strength': 'strength',
+  'strength_training': 'strength',
+  'core_training': 'strength',
+  'weight_lifting': 'strength',
   
   'mobility': 'mobility',
   'flexibility': 'mobility',
@@ -145,16 +151,29 @@ const WORKOUT_TYPE_MAPPINGS: Record<string, CanonicalWorkoutType> = {
   'hiit': 'hiit',
   'high intensity': 'hiit',
   'interval': 'hiit',
+  'intervals': 'hiit',
   
   'walking': 'walking',
   'walk': 'walking',
   'stroll': 'walking',
+  'hiking': 'walking',
   
   'yoga': 'mobility',
   'pilates': 'mobility',
+  'tai_chi': 'mobility',
+  'tai chi': 'mobility',
+  
+  // Sports
   'basketball': 'aerobic',
   'soccer': 'aerobic',
+  'football': 'aerobic',
   'tennis': 'aerobic',
+  'volleyball': 'aerobic',
+  'baseball': 'aerobic',
+  'golf': 'walking',
+  'boxing': 'hiit',
+  'martial_arts': 'hiit',
+  'martial arts': 'hiit',
 };
 
 // Symptom Type Mappings
