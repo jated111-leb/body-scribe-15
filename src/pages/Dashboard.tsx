@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarView } from "@/components/dashboard/CalendarView";
 import { TimelineView } from "@/components/dashboard/TimelineView";
+import { TimelineFeed } from "@/components/dashboard/TimelineFeed";
 import { ProfileSummary } from "@/components/dashboard/ProfileSummary";
 import { WeeklySummary } from "@/components/dashboard/WeeklySummary";
 import { ChatSidebar } from "@/components/dashboard/ChatSidebar";
 import { QuickLogDialog } from "@/components/dashboard/QuickLogDialog";
 import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
 import { Button } from "@/components/ui/button";
-import { Plus, Settings } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Settings, Calendar, List } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -108,14 +110,31 @@ const Dashboard = () => {
             {/* Weekly Summary */}
             <WeeklySummary />
 
-            {/* Calendar */}
-            <CalendarView 
-              selectedDate={selectedDate}
-              onSelectDate={setSelectedDate}
-            />
+            {/* Tabs for Calendar and Timeline */}
+            <Tabs defaultValue="timeline" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="timeline" className="gap-2">
+                  <List className="h-4 w-4" />
+                  Timeline Feed
+                </TabsTrigger>
+                <TabsTrigger value="calendar" className="gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Calendar View
+                </TabsTrigger>
+              </TabsList>
 
-            {/* Timeline for selected day */}
-            <TimelineView selectedDate={selectedDate} />
+              <TabsContent value="timeline" className="mt-0">
+                <TimelineFeed />
+              </TabsContent>
+
+              <TabsContent value="calendar" className="mt-0 space-y-6">
+                <CalendarView 
+                  selectedDate={selectedDate}
+                  onSelectDate={setSelectedDate}
+                />
+                <TimelineView selectedDate={selectedDate} />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
 
