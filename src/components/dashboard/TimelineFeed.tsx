@@ -33,6 +33,31 @@ export const TimelineFeed = () => {
     loadEvents();
   }, [user]);
 
+  // Realtime updates: refresh feed when new events are added/updated/deleted
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('timeline-events-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'timeline_events',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          loadEvents();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const loadEvents = async () => {
     if (!user) return;
     
