@@ -10,6 +10,7 @@ import RoleSelection from "./pages/RoleSelection";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import DieticianDashboard from "./pages/DieticianDashboard";
+import AcceptInvitation from "./pages/AcceptInvitation";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +26,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/invite" element={<AcceptInvitation />} />
             <Route path="/role-selection" element={<RoleSelection />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/dashboard" element={<Dashboard />} />
