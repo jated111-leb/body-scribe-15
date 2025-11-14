@@ -86,7 +86,7 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
         case "workout":
           eventData = {
             ...eventData,
-            event_type: "exercise",
+            event_type: "workout",
             title: "Workout Log",
             activity_type: normalizeWorkoutType(workoutData.type || 'aerobic'),
             duration: workoutData.duration ? parseInt(workoutData.duration) : null,
