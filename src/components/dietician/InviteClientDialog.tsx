@@ -39,12 +39,23 @@ export const InviteClientDialog = ({
     setLoading(true);
 
     try {
+      // Ensure we include a valid user JWT so the backend receives a proper Authorization header
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
+      if (!accessToken) {
+        throw new Error("You are not signed in. Please sign in and try again.");
+      }
+
       const { data, error } = await supabase.functions.invoke(
         "send-client-invitation",
         {
           body: {
             clientEmail: email,
             dieticianName: dieticianName || "Your Dietician",
+          },
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
