@@ -14,6 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          created_at: string | null
+          current_streak: number | null
+          id: string
+          last_event_date: string | null
+          metadata: Json | null
+          start_date: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_event_date?: string | null
+          metadata?: Json | null
+          start_date: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          last_event_date?: string | null
+          metadata?: Json | null
+          start_date?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      client_invitations: {
+        Row: {
+          accepted_at: string | null
+          client_email: string
+          created_at: string
+          dietician_id: string
+          expires_at: string
+          id: string
+          invitation_token: string
+          status: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          client_email: string
+          created_at?: string
+          dietician_id: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          status?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          client_email?: string
+          created_at?: string
+          dietician_id?: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
+      dietician_clients: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          dietician_id: string
+          id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          dietician_id: string
+          id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          dietician_id?: string
+          id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null
@@ -27,6 +123,7 @@ export type Database = {
           height: number | null
           id: string
           medications: string[] | null
+          role_selected: boolean | null
           sex: string | null
           updated_at: string | null
           weight: number | null
@@ -43,6 +140,7 @@ export type Database = {
           height?: number | null
           id: string
           medications?: string[] | null
+          role_selected?: boolean | null
           sex?: string | null
           updated_at?: string | null
           weight?: number | null
@@ -59,6 +157,7 @@ export type Database = {
           height?: number | null
           id?: string
           medications?: string[] | null
+          role_selected?: boolean | null
           sex?: string | null
           updated_at?: string | null
           weight?: number | null
@@ -128,6 +227,7 @@ export type Database = {
           prescription_start: string | null
           protein: number | null
           severity: string | null
+          structured_data: Json | null
           title: string
           updated_at: string | null
           user_id: string
@@ -155,6 +255,7 @@ export type Database = {
           prescription_start?: string | null
           protein?: number | null
           severity?: string | null
+          structured_data?: Json | null
           title: string
           updated_at?: string | null
           user_id: string
@@ -182,9 +283,76 @@ export type Database = {
           prescription_start?: string | null
           protein?: number | null
           severity?: string | null
+          structured_data?: Json | null
           title?: string
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_summaries: {
+        Row: {
+          created_at: string
+          generated_at: string
+          health_notes: string | null
+          id: string
+          meal_count: number | null
+          medication_count: number | null
+          summary_text: string
+          total_events: number | null
+          user_id: string
+          week_end_date: string
+          week_start_date: string
+          workout_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          generated_at?: string
+          health_notes?: string | null
+          id?: string
+          meal_count?: number | null
+          medication_count?: number | null
+          summary_text: string
+          total_events?: number | null
+          user_id: string
+          week_end_date: string
+          week_start_date: string
+          workout_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          generated_at?: string
+          health_notes?: string | null
+          id?: string
+          meal_count?: number | null
+          medication_count?: number | null
+          summary_text?: string
+          total_events?: number | null
+          user_id?: string
+          week_end_date?: string
+          week_start_date?: string
+          workout_count?: number | null
         }
         Relationships: []
       }
@@ -193,10 +361,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "dietician" | "client"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -323,6 +497,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "dietician", "client"],
+    },
   },
 } as const
