@@ -17,6 +17,13 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { updateAchievementsForUser } from "@/lib/achievements";
+import { 
+  normalizeMealType, 
+  normalizeWorkoutType, 
+  normalizeSymptomType,
+  CANONICAL_MEAL_TYPES,
+  getMealTypeDisplay
+} from "@/utils/normalization";
 
 interface QuickLogDialogProps {
   open: boolean;
@@ -56,7 +63,7 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
         event_date: new Date().toISOString(),
       };
 
-      // Build entry based on active tab
+      // Build entry based on active tab with normalized canonical types
       switch (activeTab) {
         case "freetext":
           eventData = {
@@ -72,7 +79,7 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
             event_type: "meal",
             title: "Meal Log",
             description: mealData.items,
-            meal_type: mealData.type,
+            meal_type: normalizeMealType(mealData.type || 'snack'),
             structured_data: { time: mealData.time },
           };
           break;
@@ -81,9 +88,9 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
             ...eventData,
             event_type: "exercise",
             title: "Workout Log",
-            activity_type: workoutData.type,
+            activity_type: normalizeWorkoutType(workoutData.type || 'aerobic'),
             duration: workoutData.duration ? parseInt(workoutData.duration) : null,
-            intensity: workoutData.intensity,
+            intensity: workoutData.intensity?.toLowerCase() || 'moderate',
           };
           break;
         case "med":
@@ -97,12 +104,14 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
           };
           break;
         case "symptom":
+          const symptomType = normalizeSymptomType(symptomData.name || 'pain');
           eventData = {
             ...eventData,
             event_type: "symptom",
-            title: symptomData.name,
-            severity: symptomData.severity,
+            title: symptomData.name || 'Symptom',
+            severity: symptomData.severity || 'moderate',
             description: symptomData.notes,
+            structured_data: { symptom_type: symptomType },
           };
           break;
       }
@@ -267,12 +276,19 @@ const MealForm = ({ data, onChange }: { data: any; onChange: (data: any) => void
       </div>
       <div>
         <Label htmlFor="meal-type">Meal Type</Label>
-        <Input 
-          id="meal-type" 
-          placeholder="Breakfast, Lunch..." 
+        <select
+          id="meal-type"
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           value={data.type}
           onChange={(e) => onChange({ ...data, type: e.target.value })}
-        />
+        >
+          <option value="">Select meal type...</option>
+          {CANONICAL_MEAL_TYPES.map(type => (
+            <option key={type} value={type}>
+              {getMealTypeDisplay(type)}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   </div>
@@ -302,12 +318,17 @@ const WorkoutForm = ({ data, onChange }: { data: any; onChange: (data: any) => v
       </div>
       <div>
         <Label htmlFor="workout-intensity">Intensity</Label>
-        <Input 
-          id="workout-intensity" 
-          placeholder="Low, Moderate, High" 
+        <select
+          id="workout-intensity"
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           value={data.intensity}
           onChange={(e) => onChange({ ...data, intensity: e.target.value })}
-        />
+        >
+          <option value="">Select intensity...</option>
+          <option value="low">Low</option>
+          <option value="moderate">Moderate</option>
+          <option value="high">High</option>
+        </select>
       </div>
     </div>
   </div>
