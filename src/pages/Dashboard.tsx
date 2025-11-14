@@ -5,9 +5,11 @@ import { TimelineView } from "@/components/dashboard/TimelineView";
 import { TimelineFeed } from "@/components/dashboard/TimelineFeed";
 import { ProfileSummary } from "@/components/dashboard/ProfileSummary";
 import { WeeklySummary } from "@/components/dashboard/WeeklySummary";
+import { Achievements } from "@/components/dashboard/Achievements";
 import { ChatSidebar } from "@/components/dashboard/ChatSidebar";
 import { QuickLogDialog } from "@/components/dashboard/QuickLogDialog";
 import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
+import { updateAchievementsForUser } from "@/lib/achievements";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Settings, Calendar, List } from "lucide-react";
@@ -35,6 +37,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (user) {
       loadProfile();
+      updateAchievementsForUser(user.id);
     }
   }, [user]);
 
@@ -109,6 +112,9 @@ const Dashboard = () => {
 
             {/* Weekly Summary */}
             <WeeklySummary />
+
+            {/* Achievements */}
+            {user && <Achievements userId={user.id} />}
 
             {/* Tabs for Calendar and Timeline */}
             <Tabs defaultValue="timeline" className="w-full">

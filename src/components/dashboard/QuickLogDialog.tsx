@@ -16,6 +16,7 @@ import { Utensils, Activity, Pill, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { updateAchievementsForUser } from "@/lib/achievements";
 
 interface QuickLogDialogProps {
   open: boolean;
@@ -61,6 +62,9 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
       });
 
       if (error) throw error;
+
+      // Update achievements after logging
+      await updateAchievementsForUser(user.id);
 
       toast({
         title: "Entry logged!",
