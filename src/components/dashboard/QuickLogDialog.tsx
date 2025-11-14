@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { ImageUpload } from "./ImageUpload";
 import { Utensils, Activity, Pill, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,46 +24,62 @@ interface QuickLogDialogProps {
 
 export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
   const [freeText, setFreeText] = useState("");
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
   const handleSave = async () => {
-    if (!freeText.trim()) return;
+    if (!freeText.trim() && imageUrls.length === 0) {
+      toast({
+        title: "Nothing to save",
+        description: "Please add some text or images",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    // For demo without auth, just show toast
-    toast({
-      title: "Entry logged!",
-      description: "Your health data has been recorded.",
-    });
-    setFreeText("");
-    onOpenChange(false);
-    return;
+    if (!user) {
+      toast({
+        title: "Not authenticated",
+        description: "Please sign in to log entries",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
-    const { error } = await supabase.from("timeline_events").insert({
-      user_id: user!.id,
-      event_type: "freetext",
-      title: "Quick Log",
-      description: freeText,
-      event_date: new Date().toISOString(),
-    });
+    
+    try {
+      const { error } = await supabase.from("timeline_events").insert({
+        user_id: user.id,
+        event_type: "note",
+        title: "Quick Log",
+        description: freeText,
+        attachment_urls: imageUrls,
+        event_date: new Date().toISOString(),
+      });
 
-    if (error) {
+      if (error) throw error;
+
+      toast({
+        title: "Entry logged!",
+        description: "Your health data has been recorded.",
+      });
+      
+      setFreeText("");
+      setImageUrls([]);
+      onOpenChange(false);
+    } catch (error: any) {
+      console.error('Error logging entry:', error);
       toast({
         title: "Error logging entry",
         description: error.message,
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Entry logged!",
-        description: "Your health data has been recorded.",
-      });
-      setFreeText("");
-      onOpenChange(false);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -105,6 +122,13 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
               <p className="text-xs text-muted-foreground mt-2">
                 Write naturally—we'll parse and organize the information for you.
               </p>
+            </div>
+
+            <div>
+              <Label>Add Images (Optional)</Label>
+              <div className="mt-2">
+                <ImageUpload onImagesChange={setImageUrls} maxImages={5} />
+              </div>
             </div>
           </TabsContent>
 
