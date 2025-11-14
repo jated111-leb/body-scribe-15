@@ -204,7 +204,7 @@ const DieticianDashboard = () => {
             ) : (
               activeClients.map((client) => (
                 <Card key={client.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardContent className="flex items-center gap-4 p-6">
+                  <CardContent className="flex items-center gap-4 p-6" onClick={() => navigate(`/client/${client.id}`)}>
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={client.avatar_url || ""} />
                       <AvatarFallback>
@@ -216,7 +216,10 @@ const DieticianDashboard = () => {
                       <p className="text-sm text-muted-foreground">Last activity: Today</p>
                     </div>
                     <Badge variant="outline">Active</Badge>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/client/${client.id}`);
+                    }}>
                       View Progress
                     </Button>
                   </CardContent>
@@ -235,7 +238,7 @@ const DieticianDashboard = () => {
             ) : (
               inactiveClients.map((client) => (
                 <Card key={client.id} className="hover:shadow-md transition-shadow cursor-pointer opacity-70">
-                  <CardContent className="flex items-center gap-4 p-6">
+                  <CardContent className="flex items-center gap-4 p-6" onClick={() => navigate(`/client/${client.id}`)}>
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={client.avatar_url || ""} />
                       <AvatarFallback>
@@ -247,7 +250,10 @@ const DieticianDashboard = () => {
                       <p className="text-sm text-muted-foreground">Inactive</p>
                     </div>
                     <Badge variant="secondary">Inactive</Badge>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/client/${client.id}`);
+                    }}>
                       Reactivate
                     </Button>
                   </CardContent>
@@ -266,7 +272,7 @@ const DieticianDashboard = () => {
             ) : (
               filteredClients.map((client) => (
                 <Card key={client.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardContent className="flex items-center gap-4 p-6">
+                  <CardContent className="flex items-center gap-4 p-6" onClick={() => navigate(`/client/${client.id}`)}>
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={client.avatar_url || ""} />
                       <AvatarFallback>
@@ -282,7 +288,10 @@ const DieticianDashboard = () => {
                     <Badge variant={client.status === "active" ? "outline" : "secondary"}>
                       {client.status}
                     </Badge>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/client/${client.id}`);
+                    }}>
                       View Progress
                     </Button>
                   </CardContent>

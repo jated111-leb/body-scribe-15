@@ -9,16 +9,17 @@ import { getGuestEventsForRange } from "@/lib/demo";
 
 interface TimelineViewProps {
   selectedDate: Date;
+  clientId?: string; // Optional: if provided, load data for this client instead of current user
 }
 
-export const TimelineView = ({ selectedDate }: TimelineViewProps) => {
+export const TimelineView = ({ selectedDate, clientId }: TimelineViewProps) => {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
   useEffect(() => {
     loadEvents();
-  }, [selectedDate, user]);
+  }, [selectedDate, user, clientId]);
 
   const loadEvents = async () => {
     setLoading(true);
@@ -43,7 +44,7 @@ export const TimelineView = ({ selectedDate }: TimelineViewProps) => {
       const { data, error } = await supabase
         .from('timeline_events')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', clientId || user.id) // Use clientId if provided, otherwise current user
         .gte('event_date', startOfDay.toISOString())
         .lte('event_date', endOfDay.toISOString())
         .order('event_date', { ascending: true });

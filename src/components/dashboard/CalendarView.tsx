@@ -9,6 +9,7 @@ import { format } from "date-fns";
 interface CalendarViewProps {
   selectedDate: Date;
   onSelectDate: (date: Date) => void;
+  clientId?: string; // Optional: if provided, load data for this client instead of current user
 }
 
 const getActivityEmoji = (activityType: string): string => {
@@ -36,7 +37,7 @@ const toLocalDateKey = (input: string | Date): string => {
   return d.toLocaleDateString('en-CA');
 };
 
-export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) => {
+export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarViewProps) => {
   const [eventsByDate, setEventsByDate] = useState<Map<string, TimelineEvent[]>>(new Map());
   const [doctorVisitDates, setDoctorVisitDates] = useState<Date[]>([]);
   const [medicationEvents, setMedicationEvents] = useState<TimelineEvent[]>([]);
@@ -45,7 +46,7 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
 
   useEffect(() => {
     loadEventDates();
-  }, [user]);
+  }, [user, clientId]);
 
   const loadEventDates = async () => {
     if (!user) {
@@ -81,7 +82,7 @@ export const CalendarView = ({ selectedDate, onSelectDate }: CalendarViewProps) 
     const { data, error } = await supabase
       .from('timeline_events')
       .select('*')
-      .eq('user_id', user.id);
+      .eq('user_id', clientId || user.id); // Use clientId if provided, otherwise current user
 
     if (error) {
       console.error('Error loading event dates:', error);
