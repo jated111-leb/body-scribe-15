@@ -8,101 +8,119 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Core colors - health & wellness theme */
-    --background: 30 20% 98%;
-    --foreground: 200 15% 15%;
+    /* Life Tracker Brand - Clarity, Privacy, Empathy, Growth */
+    --background: 0 0% 100%;
+    --foreground: 229 38% 17%;
 
     --card: 0 0% 100%;
-    --card-foreground: 200 15% 15%;
+    --card-foreground: 229 38% 17%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 200 15% 15%;
+    --popover-foreground: 229 38% 17%;
 
-    /* Primary - Deep teal for trust & health */
-    --primary: 180 65% 45%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 180 65% 38%;
+    /* Primary - Deep Indigo (Intelligence, calm focus) */
+    --primary: 229 38% 17%;
+    --primary-foreground: 0 0% 98%;
+    --primary-hover: 229 38% 22%;
 
-    /* Secondary - Soft gray-blue */
-    --secondary: 200 20% 94%;
-    --secondary-foreground: 200 15% 25%;
+    /* Secondary - Mist Grey (Simplicity, clarity) */
+    --secondary: 0 0% 92%;
+    --secondary-foreground: 229 38% 17%;
 
     /* Muted - Subtle backgrounds */
-    --muted: 200 15% 96%;
-    --muted-foreground: 200 12% 45%;
+    --muted: 0 0% 92%;
+    --muted-foreground: 229 20% 50%;
 
-    /* Accent - Warm coral for energy */
-    --accent: 15 85% 65%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent - Aurora Green (Health, vitality, growth) */
+    --accent: 157 77% 54%;
+    --accent-foreground: 0 0% 4%;
 
-    /* Success - Soft green */
-    --success: 140 60% 50%;
-    --success-foreground: 0 0% 100%;
+    /* Accent Warm - Soft Amber (Energy, optimism) */
+    --accent-warm: 43 90% 66%;
+    --accent-warm-foreground: 0 0% 4%;
 
-    /* Warning - Amber */
-    --warning: 40 90% 55%;
-    --warning-foreground: 0 0% 100%;
+    /* Success - Aurora Green */
+    --success: 157 77% 54%;
+    --success-foreground: 0 0% 98%;
+
+    /* Warning - Soft Amber */
+    --warning: 43 90% 66%;
+    --warning-foreground: 0 0% 4%;
 
     /* Destructive - Soft red */
-    --destructive: 0 70% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
     /* Borders & inputs */
-    --border: 200 20% 88%;
-    --input: 200 20% 90%;
-    --ring: 180 65% 45%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 157 77% 54%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(180 65% 45%), hsl(180 65% 58%));
-    --gradient-warm: linear-gradient(135deg, hsl(15 85% 65%), hsl(35 85% 70%));
-    --gradient-subtle: linear-gradient(180deg, hsl(30 20% 99%), hsl(30 20% 96%));
+    /* Gradients - Indigo→Aurora timeline flow */
+    --gradient-primary: linear-gradient(135deg, hsl(229 38% 17%), hsl(157 77% 54%));
+    --gradient-warm: linear-gradient(135deg, hsl(43 90% 66%), hsl(157 77% 54%));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(0 0% 96%));
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(200 15% 15% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(200 15% 15% / 0.1), 0 2px 4px -1px hsl(200 15% 15% / 0.06);
-    --shadow-lg: 0 10px 15px -3px hsl(200 15% 15% / 0.1), 0 4px 6px -2px hsl(200 15% 15% / 0.05);
-    --shadow-glow: 0 0 20px hsl(180 65% 45% / 0.25);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --shadow-glow: 0 0 30px hsl(157 77% 54% / 0.3);
 
-    /* Animations */
+    /* Animations - measured, breathing */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    --background: 200 25% 8%;
-    --foreground: 200 10% 95%;
+    /* Life Tracker Dark Mode - Calm indigo depth with green vitality pops */
+    --background: 229 38% 10%;
+    --foreground: 0 0% 95%;
 
-    --card: 200 20% 10%;
-    --card-foreground: 200 10% 95%;
+    --card: 229 35% 14%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 200 20% 10%;
-    --popover-foreground: 200 10% 95%;
+    --popover: 229 38% 12%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 180 65% 55%;
-    --primary-foreground: 200 25% 8%;
-    --primary-hover: 180 65% 48%;
+    --primary: 157 77% 54%;
+    --primary-foreground: 0 0% 4%;
+    --primary-hover: 157 77% 60%;
 
-    --secondary: 200 20% 15%;
-    --secondary-foreground: 200 10% 85%;
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 200 20% 14%;
-    --muted-foreground: 200 10% 60%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 15 85% 60%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 157 77% 54%;
+    --accent-foreground: 0 0% 4%;
 
-    --success: 140 60% 45%;
-    --destructive: 0 70% 55%;
-    --warning: 40 90% 50%;
+    --accent-warm: 43 90% 66%;
+    --accent-warm-foreground: 0 0% 4%;
 
-    --border: 200 20% 20%;
-    --input: 200 20% 18%;
-    --ring: 180 65% 55%;
+    --success: 157 77% 54%;
+    --success-foreground: 0 0% 4%;
+    
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 86% 97%;
+    
+    --warning: 43 90% 66%;
+    --warning-foreground: 0 0% 4%;
+
+    --border: 229 20% 25%;
+    --input: 229 20% 25%;
+    --ring: 157 77% 54%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(229 38% 17%), hsl(157 77% 54%));
+    --gradient-warm: linear-gradient(135deg, hsl(43 90% 66%), hsl(157 77% 54%));
+    --gradient-subtle: linear-gradient(180deg, hsl(229 38% 10%), hsl(229 35% 14%));
 
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
     --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -1px hsl(0 0% 0% / 0.2);
     --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.3), 0 4px 6px -2px hsl(0 0% 0% / 0.2);
+    --shadow-glow: 0 0 35px hsl(157 77% 54% / 0.4);
   }
 }
 
