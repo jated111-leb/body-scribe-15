@@ -8,7 +8,7 @@
 // Canonical Event Types - NEVER modify without database migration
 export const CANONICAL_EVENT_TYPES = [
   'meal',
-  'exercise',
+  'workout',
   'medication',
   'symptom',
   'doctor_visit',
@@ -66,11 +66,11 @@ const EVENT_TYPE_MAPPINGS: Record<string, CanonicalEventType> = {
   'eating': 'meal',
   'ate': 'meal',
   
-  'workout': 'exercise',
-  'exercise': 'exercise',
-  'activity': 'exercise',
-  'training': 'exercise',
-  'gym': 'exercise',
+'workout': 'workout',
+'exercise': 'workout',
+'activity': 'workout',
+'training': 'workout',
+'gym': 'workout',
   
   'medication': 'medication',
   'medicine': 'medication',
@@ -281,7 +281,7 @@ export function isValidSymptomType(value: string): value is CanonicalSymptomType
 export function getEventTypeDisplay(type: CanonicalEventType): string {
   const displays: Record<CanonicalEventType, string> = {
     'meal': 'Meal',
-    'exercise': 'Exercise',
+    'workout': 'Workout',
     'medication': 'Medication',
     'symptom': 'Symptom',
     'doctor_visit': 'Doctor Visit',
