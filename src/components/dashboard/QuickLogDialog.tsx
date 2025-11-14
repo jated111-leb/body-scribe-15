@@ -24,22 +24,20 @@ interface QuickLogDialogProps {
 }
 
 export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
+  const [activeTab, setActiveTab] = useState("freetext");
   const [freeText, setFreeText] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const handleSave = async () => {
-    if (!freeText.trim() && imageUrls.length === 0) {
-      toast({
-        title: "Nothing to save",
-        description: "Please add some text or images",
-        variant: "destructive",
-      });
-      return;
-    }
+  // Form state for different entry types
+  const [mealData, setMealData] = useState({ items: "", time: "", type: "" });
+  const [workoutData, setWorkoutData] = useState({ type: "", duration: "", intensity: "" });
+  const [medicationData, setMedicationData] = useState({ name: "", dose: "", time: "" });
+  const [symptomData, setSymptomData] = useState({ name: "", severity: "", notes: "" });
 
+  const handleSave = async () => {
     if (!user) {
       toast({
         title: "Not authenticated",
@@ -52,14 +50,64 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
     setLoading(true);
     
     try {
-      const { error } = await supabase.from("timeline_events").insert({
+      let eventData: any = {
         user_id: user.id,
-        event_type: "note",
-        title: "Quick Log",
-        description: freeText,
         attachment_urls: imageUrls,
         event_date: new Date().toISOString(),
-      });
+      };
+
+      // Build entry based on active tab
+      switch (activeTab) {
+        case "freetext":
+          eventData = {
+            ...eventData,
+            event_type: "note",
+            title: "Quick Log",
+            description: freeText,
+          };
+          break;
+        case "meal":
+          eventData = {
+            ...eventData,
+            event_type: "meal",
+            title: "Meal Log",
+            description: mealData.items,
+            meal_type: mealData.type,
+            structured_data: { time: mealData.time },
+          };
+          break;
+        case "workout":
+          eventData = {
+            ...eventData,
+            event_type: "exercise",
+            title: "Workout Log",
+            activity_type: workoutData.type,
+            duration: workoutData.duration ? parseInt(workoutData.duration) : null,
+            intensity: workoutData.intensity,
+          };
+          break;
+        case "med":
+          eventData = {
+            ...eventData,
+            event_type: "medication",
+            title: "Medication Log",
+            medication_name: medicationData.name,
+            dosage: medicationData.dose,
+            structured_data: { time: medicationData.time },
+          };
+          break;
+        case "symptom":
+          eventData = {
+            ...eventData,
+            event_type: "symptom",
+            title: symptomData.name,
+            severity: symptomData.severity,
+            description: symptomData.notes,
+          };
+          break;
+      }
+
+      const { error } = await supabase.from("timeline_events").insert(eventData);
 
       if (error) throw error;
 
@@ -71,8 +119,13 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
         description: "Your health data has been recorded.",
       });
       
+      // Reset all form states
       setFreeText("");
       setImageUrls([]);
+      setMealData({ items: "", time: "", type: "" });
+      setWorkoutData({ type: "", duration: "", intensity: "" });
+      setMedicationData({ name: "", dose: "", time: "" });
+      setSymptomData({ name: "", severity: "", notes: "" });
       onOpenChange(false);
     } catch (error: any) {
       console.error('Error logging entry:', error);
@@ -96,7 +149,7 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="freetext" className="mt-4">
+        <Tabs defaultValue="freetext" className="mt-4" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="freetext">Free Text</TabsTrigger>
             <TabsTrigger value="meal">
@@ -137,19 +190,43 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
           </TabsContent>
 
           <TabsContent value="meal" className="space-y-4">
-            <MealForm />
+            <MealForm data={mealData} onChange={setMealData} />
+            <div>
+              <Label>Add Images (Optional)</Label>
+              <div className="mt-2">
+                <ImageUpload onImagesChange={setImageUrls} maxImages={5} />
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="workout" className="space-y-4">
-            <WorkoutForm />
+            <WorkoutForm data={workoutData} onChange={setWorkoutData} />
+            <div>
+              <Label>Add Images (Optional)</Label>
+              <div className="mt-2">
+                <ImageUpload onImagesChange={setImageUrls} maxImages={5} />
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="med" className="space-y-4">
-            <MedicationForm />
+            <MedicationForm data={medicationData} onChange={setMedicationData} />
+            <div>
+              <Label>Add Images (Optional)</Label>
+              <div className="mt-2">
+                <ImageUpload onImagesChange={setImageUrls} maxImages={5} />
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="symptom" className="space-y-4">
-            <SymptomForm />
+            <SymptomForm data={symptomData} onChange={setSymptomData} />
+            <div>
+              <Label>Add Images (Optional)</Label>
+              <div className="mt-2">
+                <ImageUpload onImagesChange={setImageUrls} maxImages={5} />
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
 
@@ -157,7 +234,7 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave} className="bg-gradient-primary" disabled={loading || !freeText.trim()}>
+          <Button onClick={handleSave} className="bg-gradient-primary" disabled={loading}>
             {loading ? "Saving..." : "Save Entry"}
           </Button>
         </div>
@@ -166,7 +243,7 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
   );
 };
 
-const MealForm = () => (
+const MealForm = ({ data, onChange }: { data: any; onChange: (data: any) => void }) => (
   <div className="space-y-4">
     <div>
       <Label htmlFor="meal-items">Food Items</Label>
@@ -174,68 +251,124 @@ const MealForm = () => (
         id="meal-items"
         placeholder="e.g., Grilled chicken breast, quinoa, steamed broccoli"
         rows={3}
+        value={data.items}
+        onChange={(e) => onChange({ ...data, items: e.target.value })}
       />
     </div>
     <div className="grid grid-cols-2 gap-4">
       <div>
         <Label htmlFor="meal-time">Time</Label>
-        <Input id="meal-time" type="time" />
+        <Input 
+          id="meal-time" 
+          type="time" 
+          value={data.time}
+          onChange={(e) => onChange({ ...data, time: e.target.value })}
+        />
       </div>
       <div>
         <Label htmlFor="meal-type">Meal Type</Label>
-        <Input id="meal-type" placeholder="Breakfast, Lunch..." />
+        <Input 
+          id="meal-type" 
+          placeholder="Breakfast, Lunch..." 
+          value={data.type}
+          onChange={(e) => onChange({ ...data, type: e.target.value })}
+        />
       </div>
     </div>
   </div>
 );
 
-const WorkoutForm = () => (
+const WorkoutForm = ({ data, onChange }: { data: any; onChange: (data: any) => void }) => (
   <div className="space-y-4">
     <div>
       <Label htmlFor="workout-type">Activity Type</Label>
-      <Input id="workout-type" placeholder="e.g., Basketball, Running, Yoga" />
+      <Input 
+        id="workout-type" 
+        placeholder="e.g., Basketball, Running, Yoga" 
+        value={data.type}
+        onChange={(e) => onChange({ ...data, type: e.target.value })}
+      />
     </div>
     <div className="grid grid-cols-2 gap-4">
       <div>
         <Label htmlFor="workout-duration">Duration (minutes)</Label>
-        <Input id="workout-duration" type="number" placeholder="45" />
+        <Input 
+          id="workout-duration" 
+          type="number" 
+          placeholder="45" 
+          value={data.duration}
+          onChange={(e) => onChange({ ...data, duration: e.target.value })}
+        />
       </div>
       <div>
         <Label htmlFor="workout-intensity">Intensity</Label>
-        <Input id="workout-intensity" placeholder="Low, Moderate, High" />
+        <Input 
+          id="workout-intensity" 
+          placeholder="Low, Moderate, High" 
+          value={data.intensity}
+          onChange={(e) => onChange({ ...data, intensity: e.target.value })}
+        />
       </div>
     </div>
   </div>
 );
 
-const MedicationForm = () => (
+const MedicationForm = ({ data, onChange }: { data: any; onChange: (data: any) => void }) => (
   <div className="space-y-4">
     <div>
       <Label htmlFor="med-name">Medication Name</Label>
-      <Input id="med-name" placeholder="e.g., Metformin" />
+      <Input 
+        id="med-name" 
+        placeholder="e.g., Metformin" 
+        value={data.name}
+        onChange={(e) => onChange({ ...data, name: e.target.value })}
+      />
     </div>
     <div className="grid grid-cols-2 gap-4">
       <div>
         <Label htmlFor="med-dose">Dose</Label>
-        <Input id="med-dose" placeholder="e.g., 500mg" />
+        <Input 
+          id="med-dose" 
+          placeholder="e.g., 500mg" 
+          value={data.dose}
+          onChange={(e) => onChange({ ...data, dose: e.target.value })}
+        />
       </div>
       <div>
         <Label htmlFor="med-time">Time Taken</Label>
-        <Input id="med-time" type="time" />
+        <Input 
+          id="med-time" 
+          type="time" 
+          value={data.time}
+          onChange={(e) => onChange({ ...data, time: e.target.value })}
+        />
       </div>
     </div>
   </div>
 );
 
-const SymptomForm = () => (
+const SymptomForm = ({ data, onChange }: { data: any; onChange: (data: any) => void }) => (
   <div className="space-y-4">
     <div>
       <Label htmlFor="symptom-name">Symptom</Label>
-      <Input id="symptom-name" placeholder="e.g., Right shoulder pain" />
+      <Input 
+        id="symptom-name" 
+        placeholder="e.g., Right shoulder pain" 
+        value={data.name}
+        onChange={(e) => onChange({ ...data, name: e.target.value })}
+      />
     </div>
     <div>
       <Label htmlFor="symptom-severity">Severity (1-10)</Label>
-      <Input id="symptom-severity" type="number" min="1" max="10" placeholder="5" />
+      <Input 
+        id="symptom-severity" 
+        type="number" 
+        min="1" 
+        max="10" 
+        placeholder="5" 
+        value={data.severity}
+        onChange={(e) => onChange({ ...data, severity: e.target.value })}
+      />
     </div>
     <div>
       <Label htmlFor="symptom-notes">Additional Notes</Label>
@@ -243,6 +376,8 @@ const SymptomForm = () => (
         id="symptom-notes"
         placeholder="Context, triggers, or other relevant details..."
         rows={3}
+        value={data.notes}
+        onChange={(e) => onChange({ ...data, notes: e.target.value })}
       />
     </div>
   </div>
