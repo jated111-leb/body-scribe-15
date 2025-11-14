@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InviteClientDialog } from "@/components/dietician/InviteClientDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -24,6 +25,8 @@ const DieticianDashboard = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -31,8 +34,23 @@ const DieticianDashboard = () => {
   useEffect(() => {
     if (user) {
       loadClients();
+      loadProfile();
     }
   }, [user]);
+
+  const loadProfile = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .single();
+    
+    if (data) {
+      setProfile(data);
+    }
+  };
 
   const loadClients = async () => {
     if (!user) return;
@@ -159,7 +177,7 @@ const DieticianDashboard = () => {
               className="pl-10"
             />
           </div>
-          <Button className="bg-gradient-primary shadow-glow">
+          <Button className="bg-gradient-primary shadow-glow" onClick={() => setShowInviteDialog(true)}>
             <UserPlus className="mr-2 h-4 w-4" />
             Add Client
           </Button>
@@ -274,6 +292,14 @@ const DieticianDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Invite Dialog */}
+      <InviteClientDialog
+        open={showInviteDialog}
+        onOpenChange={setShowInviteDialog}
+        dieticianName={profile?.full_name || "Your Dietician"}
+        onInviteSent={loadClients}
+      />
     </div>
   );
 };
