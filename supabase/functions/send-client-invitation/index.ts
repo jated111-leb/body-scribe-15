@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.78.0";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import * as jose from "https://deno.land/x/jose@v4.14.4/index.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -21,22 +22,21 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Get authorization header
+    // Get authorization header and decode JWT (already verified by Supabase via verify_jwt = true)
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       throw new Error("No authorization header");
     }
 
-    // Create Supabase client with user's token for auth check
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      {
-        global: {
-          headers: { Authorization: authHeader },
-        },
-      }
-    );
+    const jwt = authHeader.replace("Bearer ", "");
+    const payload = jose.decodeJwt(jwt);
+    const userId = payload.sub;
+
+    if (!userId) {
+      throw new Error("Invalid token - missing user ID");
+    }
+
+    console.log("User authenticated:", userId);
     
     // Create admin client with service role for database operations (bypasses RLS)
     const supabaseAdmin = createClient(
@@ -48,19 +48,6 @@ const handler = async (req: Request): Promise<Response> => {
         },
       }
     );
-
-    // Get the current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser();
-
-    if (userError || !user) {
-      console.error("User error:", userError);
-      throw new Error("Unauthorized");
-    }
-
-    console.log("User authenticated:", user.id);
 
     const { clientEmail, dieticianName }: InvitationRequest = await req.json();
 
@@ -75,7 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { data: invitation, error: inviteError } = await supabaseAdmin
       .from("client_invitations")
       .insert({
-        dietician_id: user.id,
+        dietician_id: userId,
         client_email: clientEmail,
       })
       .select()
