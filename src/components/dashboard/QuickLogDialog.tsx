@@ -298,12 +298,58 @@ const WorkoutForm = ({ data, onChange }: { data: any; onChange: (data: any) => v
   <div className="space-y-4">
     <div>
       <Label htmlFor="workout-type">Activity Type</Label>
-      <Input 
-        id="workout-type" 
-        placeholder="e.g., Basketball, Running, Yoga" 
+      <select
+        id="workout-type"
+        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         value={data.type}
         onChange={(e) => onChange({ ...data, type: e.target.value })}
-      />
+      >
+        <option value="">Select activity...</option>
+        
+        <optgroup label="Walking & Running">
+          <option value="walking">Walking</option>
+          <option value="running">Running</option>
+          <option value="hiking">Hiking</option>
+        </optgroup>
+        
+        <optgroup label="Cardio">
+          <option value="cycling">Cycling</option>
+          <option value="swimming">Swimming</option>
+          <option value="dancing">Dance</option>
+          <option value="rowing">Rowing</option>
+        </optgroup>
+        
+        <optgroup label="Strength">
+          <option value="strength_training">Strength Training</option>
+          <option value="functional_strength">Functional Strength</option>
+          <option value="core_training">Core Training</option>
+          <option value="weight_lifting">Weight Lifting</option>
+        </optgroup>
+        
+        <optgroup label="HIIT & Intervals">
+          <option value="hiit">HIIT</option>
+          <option value="intervals">Interval Training</option>
+        </optgroup>
+        
+        <optgroup label="Mobility & Flexibility">
+          <option value="yoga">Yoga</option>
+          <option value="pilates">Pilates</option>
+          <option value="stretching">Stretching</option>
+          <option value="tai_chi">Tai Chi</option>
+        </optgroup>
+        
+        <optgroup label="Sports">
+          <option value="basketball">Basketball</option>
+          <option value="soccer">Soccer</option>
+          <option value="football">Football</option>
+          <option value="tennis">Tennis</option>
+          <option value="volleyball">Volleyball</option>
+          <option value="baseball">Baseball</option>
+          <option value="golf">Golf</option>
+          <option value="boxing">Boxing</option>
+          <option value="martial_arts">Martial Arts</option>
+        </optgroup>
+      </select>
     </div>
     <div className="grid grid-cols-2 gap-4">
       <div>
