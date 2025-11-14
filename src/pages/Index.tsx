@@ -47,12 +47,11 @@ const Index = () => {
         <div className="relative container mx-auto px-6 py-20 lg:py-32">
           <div className="max-w-3xl">
             <h1 className="text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-              Your personal
-              <span className="bg-gradient-primary bg-clip-text text-transparent"> operating system</span> for health
+              Understanding,
+              <span className="bg-gradient-primary bg-clip-text text-transparent"> synchronized</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-              Transform raw health inputs into a continuous, contextual, actionable timeline. 
-              Log naturally, understand deeply, optimize intelligently.
+              Transform scattered health signals into meaningful updates — a shared layer of clarity between you and your care team.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button 
@@ -60,14 +59,14 @@ const Index = () => {
                 className="bg-gradient-primary hover:opacity-90 shadow-glow"
                 onClick={() => navigate('/auth')}
               >
-                Get Started <ArrowRight className="ml-2 h-5 w-5" />
+                Explore Aura <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Button 
                 size="lg" 
                 variant="outline"
                 onClick={() => navigate('/auth')}
               >
-                View Demo
+                For Professionals
               </Button>
             </div>
           </div>
@@ -76,44 +75,56 @@ const Index = () => {
 
       {/* Features Section */}
       <section className="container mx-auto px-6 py-20">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+            Clarity without effort
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Aura interprets your nutrition, sleep, and mood into gentle daily summaries — your personal health mirror.
+          </p>
+        </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <FeatureCard
             icon={<Activity className="h-8 w-8 text-primary" />}
-            title="Quick Capture"
-            description="Log meals, symptoms, workouts, and more in natural language. We parse and organize everything."
+            title="Connect Your Rhythm"
+            description="Observe meals, sleep, mood, and vitals. Aura reads your inputs and surfaces what truly matters."
           />
           <FeatureCard
             icon={<Calendar className="h-8 w-8 text-primary" />}
-            title="Smart Timeline"
-            description="Beautiful calendar view with heatmaps, trackers, and daily snapshots of your health journey."
+            title="Pattern Recognition"
+            description="See daily rhythms visualized — steadiness, harmony, and progress in clear context."
           />
           <FeatureCard
             icon={<MessageSquare className="h-8 w-8 text-primary" />}
-            title="AI Assistant"
-            description="Ask questions, get summaries, receive personalized recommendations based on your data."
+            title="Gentle Intelligence"
+            description="Contextual summaries that feel conversational, not gamified. Understanding, not judgment."
           />
           <FeatureCard
             icon={<TrendingUp className="h-8 w-8 text-primary" />}
-            title="Trend Analysis"
-            description="Spot patterns, track progress, and understand what's working—or what needs attention."
+            title="Shared Clarity"
+            description="Collaborate with professionals through instant, consent-based updates. Always aligned, never overwhelmed."
           />
         </div>
       </section>
 
       {/* CTA Section */}
       <section className="bg-card border-y">
-        <div className="container mx-auto px-6 py-16 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to take control of your health?</h2>
-          <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join thousands using Lovable OS to build better health habits through intelligent logging and insights.
-          </p>
-          <Button 
-            size="lg"
-            onClick={() => navigate('/auth')}
-            className="bg-gradient-primary hover:opacity-90"
-          >
-            Start Your Journey
-          </Button>
+        <div className="container mx-auto px-6 py-20">
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
+              See the pattern. Share the understanding.
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8">
+              Awareness heals faster than pressure. Aura makes clarity a shared language.
+            </p>
+            <Button 
+              size="lg" 
+              className="bg-gradient-primary hover:opacity-90 shadow-glow"
+              onClick={() => navigate('/auth')}
+            >
+              Start with Aura <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </section>
     </div>

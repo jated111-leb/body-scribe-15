@@ -83,9 +83,9 @@ const Dashboard = () => {
               />
               
               <div className="flex-1 flex flex-col items-center justify-center">
-                <h1 className="text-3xl font-bold">Your Health Timeline</h1>
+                <h1 className="text-3xl font-bold">Your Rhythm</h1>
                 <p className="text-muted-foreground">
-                  Welcome to Life Tracker!
+                  Understanding your patterns, synchronized.
                 </p>
               </div>
 
@@ -94,7 +94,7 @@ const Dashboard = () => {
                   className="bg-gradient-primary shadow-glow"
                   onClick={() => setShowQuickLog(true)}
                 >
-                  <Plus className="mr-2 h-4 w-4" /> Quick Log
+                  <Plus className="mr-2 h-4 w-4" /> Log Moment
                 </Button>
                 <Button
                   variant="outline"

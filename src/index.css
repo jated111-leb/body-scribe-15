@@ -8,119 +8,119 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Life Tracker Brand - Clarity, Privacy, Empathy, Growth */
+    /* Aura Brand - Clarity, Synchronicity, Trust, Progress */
     --background: 0 0% 100%;
-    --foreground: 229 38% 17%;
+    --foreground: 260 30% 20%;
 
     --card: 0 0% 100%;
-    --card-foreground: 229 38% 17%;
+    --card-foreground: 260 30% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 229 38% 17%;
+    --popover-foreground: 260 30% 20%;
 
-    /* Primary - Deep Indigo (Intelligence, calm focus) */
-    --primary: 229 38% 17%;
+    /* Primary - Deep Violet (Intelligence, understanding) */
+    --primary: 260 85% 35%;
     --primary-foreground: 0 0% 98%;
-    --primary-hover: 229 38% 22%;
+    --primary-hover: 260 85% 40%;
 
-    /* Secondary - Mist Grey (Simplicity, clarity) */
-    --secondary: 0 0% 92%;
-    --secondary-foreground: 229 38% 17%;
+    /* Secondary - Soft Neutral (Clinical trust, clarity) */
+    --secondary: 200 15% 92%;
+    --secondary-foreground: 260 30% 20%;
 
     /* Muted - Subtle backgrounds */
-    --muted: 0 0% 92%;
-    --muted-foreground: 229 20% 50%;
+    --muted: 200 15% 94%;
+    --muted-foreground: 260 15% 50%;
 
-    /* Accent - Aurora Green (Health, vitality, growth) */
-    --accent: 157 77% 54%;
-    --accent-foreground: 0 0% 4%;
+    /* Accent - Aqua (Flow, connection, vitality) */
+    --accent: 180 75% 60%;
+    --accent-foreground: 260 30% 20%;
 
-    /* Accent Warm - Soft Amber (Energy, optimism) */
-    --accent-warm: 43 90% 66%;
-    --accent-warm-foreground: 0 0% 4%;
+    /* Accent Warm - Soft warmth for balance */
+    --accent-warm: 45 85% 65%;
+    --accent-warm-foreground: 260 30% 20%;
 
-    /* Success - Aurora Green */
-    --success: 157 77% 54%;
+    /* Success - Aqua tone */
+    --success: 180 75% 60%;
     --success-foreground: 0 0% 98%;
 
-    /* Warning - Soft Amber */
-    --warning: 43 90% 66%;
-    --warning-foreground: 0 0% 4%;
+    /* Warning - Warm tone */
+    --warning: 45 85% 65%;
+    --warning-foreground: 260 30% 20%;
 
     /* Destructive - Soft red */
-    --destructive: 0 84% 60%;
+    --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 98%;
 
     /* Borders & inputs */
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 157 77% 54%;
+    --border: 200 15% 88%;
+    --input: 200 15% 88%;
+    --ring: 180 75% 60%;
 
     --radius: 0.5rem;
 
-    /* Gradients - Indigo→Aurora timeline flow */
-    --gradient-primary: linear-gradient(135deg, hsl(229 38% 17%), hsl(157 77% 54%));
-    --gradient-warm: linear-gradient(135deg, hsl(43 90% 66%), hsl(157 77% 54%));
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(0 0% 96%));
+    /* Gradients - Violet→Aqua (understanding flow) */
+    --gradient-primary: linear-gradient(135deg, hsl(260 85% 35%), hsl(180 75% 60%));
+    --gradient-warm: linear-gradient(135deg, hsl(260 85% 35%), hsl(45 85% 65%));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(200 15% 96%));
 
-    /* Shadows */
+    /* Shadows - breathing, calm */
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-    --shadow-glow: 0 0 30px hsl(157 77% 54% / 0.3);
+    --shadow-glow: 0 0 35px hsl(180 75% 60% / 0.25);
 
     /* Animations - measured, breathing */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    /* Life Tracker Dark Mode - Calm indigo depth with green vitality pops */
-    --background: 229 38% 10%;
+    /* Aura Dark Mode - Deep violet depth with aqua connection */
+    --background: 260 40% 8%;
     --foreground: 0 0% 95%;
 
-    --card: 229 35% 14%;
+    --card: 260 35% 12%;
     --card-foreground: 0 0% 95%;
 
-    --popover: 229 38% 12%;
+    --popover: 260 40% 10%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 157 77% 54%;
-    --primary-foreground: 0 0% 4%;
-    --primary-hover: 157 77% 60%;
+    --primary: 180 75% 60%;
+    --primary-foreground: 260 40% 8%;
+    --primary-hover: 180 75% 65%;
 
-    --secondary: 0 0% 20%;
+    --secondary: 260 20% 18%;
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 18%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 260 20% 16%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 157 77% 54%;
-    --accent-foreground: 0 0% 4%;
+    --accent: 180 75% 60%;
+    --accent-foreground: 260 40% 8%;
 
-    --accent-warm: 43 90% 66%;
-    --accent-warm-foreground: 0 0% 4%;
+    --accent-warm: 45 85% 65%;
+    --accent-warm-foreground: 260 40% 8%;
 
-    --success: 157 77% 54%;
-    --success-foreground: 0 0% 4%;
+    --success: 180 75% 60%;
+    --success-foreground: 260 40% 8%;
     
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 86% 97%;
+    --destructive: 0 60% 45%;
+    --destructive-foreground: 0 0% 98%;
     
-    --warning: 43 90% 66%;
-    --warning-foreground: 0 0% 4%;
+    --warning: 45 85% 65%;
+    --warning-foreground: 260 40% 8%;
 
-    --border: 229 20% 25%;
-    --input: 229 20% 25%;
-    --ring: 157 77% 54%;
+    --border: 260 20% 22%;
+    --input: 260 20% 22%;
+    --ring: 180 75% 60%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(229 38% 17%), hsl(157 77% 54%));
-    --gradient-warm: linear-gradient(135deg, hsl(43 90% 66%), hsl(157 77% 54%));
-    --gradient-subtle: linear-gradient(180deg, hsl(229 38% 10%), hsl(229 35% 14%));
+    --gradient-primary: linear-gradient(135deg, hsl(260 85% 35%), hsl(180 75% 60%));
+    --gradient-warm: linear-gradient(135deg, hsl(260 85% 35%), hsl(45 85% 65%));
+    --gradient-subtle: linear-gradient(180deg, hsl(260 40% 8%), hsl(260 35% 12%));
 
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -1px hsl(0 0% 0% / 0.2);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.3), 0 4px 6px -2px hsl(0 0% 0% / 0.2);
-    --shadow-glow: 0 0 35px hsl(157 77% 54% / 0.4);
+    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.4);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.35), 0 2px 4px -1px hsl(0 0% 0% / 0.25);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.35), 0 4px 6px -2px hsl(0 0% 0% / 0.25);
+    --shadow-glow: 0 0 40px hsl(180 75% 60% / 0.3);
   }
 }
 
