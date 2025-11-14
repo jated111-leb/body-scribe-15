@@ -19,8 +19,9 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Don't redirect from the auth page itself, let Index handle it
     if (user) {
-      navigate("/dashboard");
+      navigate("/");
     }
   }, [user, navigate]);
 
@@ -36,15 +37,15 @@ const Auth = () => {
         description: error.message,
         variant: "destructive",
       });
+      setLoading(false);
     } else {
       toast({
         title: "Welcome back!",
         description: "You've successfully signed in.",
       });
-      navigate("/dashboard");
+      // Navigation will be handled by the Index page based on role
+      navigate("/");
     }
-    
-    setLoading(false);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -59,14 +60,15 @@ const Auth = () => {
         description: error.message,
         variant: "destructive",
       });
+      setLoading(false);
     } else {
       toast({
         title: "Account created!",
-        description: "You can now sign in with your credentials.",
+        description: "Please select your role to continue.",
       });
+      // Redirect to role selection after successful signup
+      navigate("/role-selection");
     }
-    
-    setLoading(false);
   };
 
   return (
