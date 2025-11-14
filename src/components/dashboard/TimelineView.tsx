@@ -138,13 +138,32 @@ const TimelineEntry = ({ event }: { event: any }) => {
           </Badge>
         </div>
         {event.description && (
-          <p className="text-sm text-muted-foreground">{event.description}</p>
+          <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
         )}
         {event.medication_name && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground mb-2">
             {event.prescription_start && `Started: ${format(new Date(event.prescription_start), 'MMM d, yyyy')}`}
             {event.prescription_end && ` - Ended: ${format(new Date(event.prescription_end), 'MMM d, yyyy')}`}
           </p>
+        )}
+        {event.attachment_urls && event.attachment_urls.length > 0 && (
+          <div className="grid grid-cols-3 gap-2 mt-2">
+            {event.attachment_urls.map((url: string, index: number) => (
+              <a
+                key={index}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="aspect-square rounded-lg overflow-hidden bg-muted hover:opacity-90 transition-opacity"
+              >
+                <img
+                  src={url}
+                  alt={`Attachment ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </a>
+            ))}
+          </div>
         )}
       </div>
     </div>
