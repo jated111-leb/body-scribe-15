@@ -1,10 +1,36 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Activity, Calendar, MessageSquare, TrendingUp } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import heroBg from "@/assets/hero-bg.jpg";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { role, loading } = useUserRole();
+
+  useEffect(() => {
+    if (!loading && user) {
+      if (!role) {
+        // User is authenticated but has no role
+        navigate("/role-selection");
+      } else if (role === "dietician") {
+        navigate("/dietician-dashboard");
+      } else {
+        navigate("/dashboard");
+      }
+    }
+  }, [user, role, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -32,14 +58,14 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="bg-gradient-primary hover:opacity-90 shadow-glow"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/auth')}
               >
                 Get Started <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Button 
                 size="lg" 
                 variant="outline"
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/auth')}
               >
                 View Demo
               </Button>

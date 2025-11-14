@@ -11,14 +11,23 @@ import { Plus, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showQuickLog, setShowQuickLog] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const { user, signOut, loading } = useAuth();
+  const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Redirect dieticians to their specialized dashboard
+  useEffect(() => {
+    if (!roleLoading && role === "dietician") {
+      navigate("/dietician-dashboard");
+    }
+  }, [role, roleLoading, navigate]);
 
   useEffect(() => {
     if (user) {
