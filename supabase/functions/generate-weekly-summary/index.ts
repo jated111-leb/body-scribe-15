@@ -75,10 +75,73 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (eventsError) {
       console.error("Events error:", eventsError);
-      throw new Error("Failed to load events");
+      // Return a gentle message instead of throwing
+      return new Response(
+        JSON.stringify({
+          success: true,
+          summary: {
+            user_id: targetUserId,
+            week_start_date: startDate.toISOString().split('T')[0],
+            week_end_date: endDate.toISOString().split('T')[0],
+            summary_text: "Unable to access your health signals for this week. Please ensure you have logged some activities.",
+            total_events: 0,
+            meal_count: 0,
+            workout_count: 0,
+            medication_count: 0,
+            generated_at: new Date().toISOString(),
+          },
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        }
+      );
     }
 
     console.log(`Found ${events?.length || 0} events for the week`);
+
+    // Handle case with no events gracefully
+    if (!events || events.length === 0) {
+      console.log("No events found - generating minimal summary");
+      const minimalSummary = `This week shows a quiet rhythm. No health signals were recorded between ${startDate.toLocaleDateString()} and ${endDate.toLocaleDateString()}.\n\nConsider logging meals, movement, or moments to help Aura understand your patterns better. Even small entries create meaningful insights over time.`;
+      
+      const summaryData = {
+        user_id: targetUserId,
+        week_start_date: startDate.toISOString().split('T')[0],
+        week_end_date: endDate.toISOString().split('T')[0],
+        summary_text: minimalSummary,
+        total_events: 0,
+        meal_count: 0,
+        workout_count: 0,
+        medication_count: 0,
+        generated_at: new Date().toISOString(),
+      };
+
+      // Try to save minimal summary
+      await supabaseClient
+        .from("weekly_summaries")
+        .upsert(summaryData, {
+          onConflict: 'user_id,week_start_date',
+          ignoreDuplicates: false
+        });
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          summary: summaryData,
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        }
+      );
+    }
 
     // Calculate stats
     const mealCount = events?.filter(e => e.event_type === "meal").length || 0;
@@ -123,18 +186,20 @@ ${events?.map(e => `
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${lovableApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content: `You are Aura, a calm intelligence layer that transforms health signals into understanding.
+    let aiResponse;
+    try {
+      aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${lovableApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            {
+              role: "system",
+              content: `You are Aura, a calm intelligence layer that transforms health signals into understanding.
 
 Your role is to create a weekly rhythm summary that:
 1. Opens with observation of the week's steadiness and flow
@@ -149,19 +214,87 @@ Style: Use clear paragraphs (not bullet points). Write as if composing a reflect
 Length: 250-350 words.
 
 Remember: You're not a tracker - you're an understanding engine. Focus on patterns, rhythms, and meaningful signals.`
+            },
+            {
+              role: "user",
+              content: userContext
+            }
+          ],
+        }),
+      });
+    } catch (fetchError) {
+      console.error("Network error calling AI:", fetchError);
+      // Return a fallback summary
+      return new Response(
+        JSON.stringify({
+          success: true,
+          summary: {
+            user_id: targetUserId,
+            week_start_date: startDate.toISOString().split('T')[0],
+            week_end_date: endDate.toISOString().split('T')[0],
+            summary_text: `Your week showed ${events?.length || 0} health signals. Unable to generate detailed insights at this time - please try again.`,
+            total_events: events?.length || 0,
+            meal_count: mealCount,
+            workout_count: workoutCount,
+            medication_count: medicationCount,
+            generated_at: new Date().toISOString(),
           },
-          {
-            role: "user",
-            content: userContext
-          }
-        ],
-      }),
-    });
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        }
+      );
+    }
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
       console.error("AI API error:", aiResponse.status, errorText);
-      throw new Error(`AI API error: ${aiResponse.status}`);
+      
+      // Handle rate limit specifically
+      if (aiResponse.status === 429) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "Rate limit reached. Please wait a moment and try again.",
+          }),
+          {
+            status: 429,
+            headers: {
+              "Content-Type": "application/json",
+              ...corsHeaders,
+            },
+          }
+        );
+      }
+
+      // Return fallback summary for other AI errors
+      return new Response(
+        JSON.stringify({
+          success: true,
+          summary: {
+            user_id: targetUserId,
+            week_start_date: startDate.toISOString().split('T')[0],
+            week_end_date: endDate.toISOString().split('T')[0],
+            summary_text: `This week captured ${events?.length || 0} health moments across ${mealCount} meals, ${workoutCount} workouts, and ${medicationCount} medication logs. Your rhythm is being observed, though detailed insights are temporarily unavailable.`,
+            total_events: events?.length || 0,
+            meal_count: mealCount,
+            workout_count: workoutCount,
+            medication_count: medicationCount,
+            generated_at: new Date().toISOString(),
+          },
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        }
+      );
     }
 
     const aiData = await aiResponse.json();
@@ -169,26 +302,50 @@ Remember: You're not a tracker - you're an understanding engine. Focus on patter
 
     console.log("Summary generated successfully");
 
-    // Save summary to database
+    // Save summary to database with proper conflict resolution
+    const summaryData = {
+      user_id: targetUserId,
+      week_start_date: startDate.toISOString().split('T')[0],
+      week_end_date: endDate.toISOString().split('T')[0],
+      summary_text: summaryText,
+      total_events: events?.length || 0,
+      meal_count: mealCount,
+      workout_count: workoutCount,
+      medication_count: medicationCount,
+      generated_at: new Date().toISOString(),
+    };
+
+    console.log("Saving summary to database...");
+    
     const { data: summary, error: saveError } = await supabaseClient
       .from("weekly_summaries")
-      .upsert({
-        user_id: targetUserId,
-        week_start_date: startDate.toISOString().split('T')[0],
-        week_end_date: endDate.toISOString().split('T')[0],
-        summary_text: summaryText,
-        total_events: events?.length || 0,
-        meal_count: mealCount,
-        workout_count: workoutCount,
-        medication_count: medicationCount,
-        generated_at: new Date().toISOString(),
+      .upsert(summaryData, {
+        onConflict: 'user_id,week_start_date',
+        ignoreDuplicates: false
       })
       .select()
       .single();
 
     if (saveError) {
       console.error("Save error:", saveError);
-      throw new Error("Failed to save summary");
+      // Still return success with the generated summary even if save fails
+      return new Response(
+        JSON.stringify({
+          success: true,
+          summary: {
+            ...summaryData,
+            id: 'temp-' + Date.now(),
+          },
+          warning: "Summary generated but not saved to database",
+        }),
+        {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
+        }
+      );
     }
 
     console.log("Summary saved to database:", summary.id);

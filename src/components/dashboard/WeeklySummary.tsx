@@ -120,19 +120,46 @@ export const WeeklySummary = ({ userId }: WeeklySummaryProps) => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Function invocation error:", error);
+        throw error;
+      }
 
-      toast({
-        title: "Summary generated!",
-        description: "Your weekly health summary is ready",
-      });
+      // Handle both success and warning cases
+      if (data?.success === false) {
+        throw new Error(data.error || "Failed to generate summary");
+      }
 
-      loadSummaries();
+      if (data?.warning) {
+        toast({
+          title: "Summary generated with warning",
+          description: data.warning,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Rhythm understood",
+          description: "Your weekly patterns have been interpreted",
+        });
+      }
+
+      // Reload summaries to display the new one
+      await loadSummaries();
     } catch (error: any) {
       console.error("Error generating summary:", error);
+      
+      // Provide helpful error messages based on error type
+      let errorMessage = "Unable to interpret signals. Please try again.";
+      
+      if (error.message?.includes("429") || error.message?.includes("rate limit")) {
+        errorMessage = "Too many requests. Please wait a moment and try again.";
+      } else if (error.message?.includes("network") || error.message?.includes("fetch")) {
+        errorMessage = "Connection issue. Please check your network and try again.";
+      }
+
       toast({
-        title: "Failed to generate summary",
-        description: error.message || "Please try again later",
+        title: "Understanding delayed",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
