@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { CalendarView } from "@/components/dashboard/CalendarView";
 import { TimelineView } from "@/components/dashboard/TimelineView";
 import { ProfileSummary } from "@/components/dashboard/ProfileSummary";
+import { WeeklySummary } from "@/components/dashboard/WeeklySummary";
 import { ChatSidebar } from "@/components/dashboard/ChatSidebar";
 import { QuickLogDialog } from "@/components/dashboard/QuickLogDialog";
 import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
@@ -103,6 +104,9 @@ const Dashboard = () => {
 
             {/* Profile Summary */}
             <ProfileSummary />
+
+            {/* Weekly Summary */}
+            <WeeklySummary />
 
             {/* Calendar */}
             <CalendarView 

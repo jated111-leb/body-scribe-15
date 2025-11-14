@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarView } from "@/components/dashboard/CalendarView";
 import { TimelineView } from "@/components/dashboard/TimelineView";
+import { WeeklySummary } from "@/components/dashboard/WeeklySummary";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -361,12 +362,20 @@ const ClientProfile = () => {
           </CardContent>
         </Card>
 
+        {/* Weekly Summary */}
+        <WeeklySummary userId={clientId} />
+
         {/* Timeline and Calendar */}
         <Tabs defaultValue="timeline" className="w-full">
           <TabsList className="mb-6">
+            <TabsTrigger value="summary">Weekly Summary</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
             <TabsTrigger value="calendar">Calendar View</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="summary" className="space-y-6">
+            <WeeklySummary userId={clientId} />
+          </TabsContent>
 
           <TabsContent value="timeline" className="space-y-6">
             <Card>
