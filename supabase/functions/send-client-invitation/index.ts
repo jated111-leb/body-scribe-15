@@ -27,13 +27,24 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("No authorization header");
     }
 
-    // Create Supabase client with user's token
+    // Create Supabase client with user's token for auth check
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
       {
         global: {
           headers: { Authorization: authHeader },
+        },
+      }
+    );
+    
+    // Create admin client with service role for database operations (bypasses RLS)
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      {
+        auth: {
+          persistSession: false,
         },
       }
     );
@@ -60,8 +71,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Creating invitation for:", clientEmail);
 
-    // Create invitation record
-    const { data: invitation, error: inviteError } = await supabaseClient
+    // Create invitation record using admin client to bypass RLS
+    const { data: invitation, error: inviteError } = await supabaseAdmin
       .from("client_invitations")
       .insert({
         dietician_id: user.id,
