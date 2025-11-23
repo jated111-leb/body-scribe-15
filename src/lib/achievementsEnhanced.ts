@@ -43,6 +43,8 @@ export async function updateAchievementsEnhanced(userId: string): Promise<{
   progressUpdates: AchievementProgress[];
 }> {
   try {
+    console.log('🎯 Starting achievement calculation for user:', userId);
+    
     const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
     const { data: events, error: eventsError } = await supabase
       .from("timeline_events")
@@ -52,13 +54,20 @@ export async function updateAchievementsEnhanced(userId: string): Promise<{
       .order("event_date", { ascending: false });
 
     if (eventsError) throw eventsError;
-    if (!events || events.length === 0) return { newAchievements: [], progressUpdates: [] };
+    if (!events || events.length === 0) {
+      console.log('⚠️ No events found for user');
+      return { newAchievements: [], progressUpdates: [] };
+    }
+    
+    console.log(`📅 Found ${events.length} events in last 30 days`);
 
     // Fetch existing achievements
     const { data: existingAchievements } = await supabase
       .from("achievements")
       .select("*")
       .eq("user_id", userId);
+
+    console.log(`🏆 Existing achievements: ${existingAchievements?.length || 0}`);
 
     const achievementMap = new Map(
       (existingAchievements || []).map((a) => [`${a.type}_${a.category}`, a])
@@ -72,12 +81,14 @@ export async function updateAchievementsEnhanced(userId: string): Promise<{
       .single();
 
     const progressLevel = preferences?.progressive_complexity || 1;
+    console.log(`📊 Progress level: ${progressLevel} (Week ${progressLevel})`);
 
     const newAchievements: Achievement[] = [];
     const progressUpdates: AchievementProgress[] = [];
 
     // Week 1: Only consistency
     if (progressLevel >= 1) {
+      console.log('🔄 Calculating consistency achievements...');
       const { achievements, progress } = await calculateConsistencyWithProgress(
         userId,
         events,
@@ -85,36 +96,43 @@ export async function updateAchievementsEnhanced(userId: string): Promise<{
       );
       newAchievements.push(...achievements);
       progressUpdates.push(...progress);
+      console.log(`  ✓ Consistency: ${achievements.length} new, ${progress.length} in progress`);
     }
 
     // Week 2: Add reduction
     if (progressLevel >= 2) {
+      console.log('📉 Calculating reduction achievements...');
       const reductionAchievements = await calculateReductionAchievements(
         userId,
         events,
         achievementMap
       );
       newAchievements.push(...reductionAchievements);
+      console.log(`  ✓ Reduction: ${reductionAchievements.length} new`);
     }
 
     // Week 3+: Add correlation
     if (progressLevel >= 3) {
+      console.log('🔗 Calculating correlation achievements...');
       const correlationAchievements = await calculateCorrelationAchievements(
         userId,
         events,
         achievementMap
       );
       newAchievements.push(...correlationAchievements);
+      console.log(`  ✓ Correlation: ${correlationAchievements.length} new`);
     }
 
     // Week 4+: Full lifestyle shift
     if (progressLevel >= 4) {
+      console.log('🌟 Calculating lifestyle shift achievements...');
       const lifestyleAchievements = await calculateLifestyleShiftAchievements(
         userId,
         events,
         achievementMap
       );
       newAchievements.push(...lifestyleAchievements);
+      console.log(`  ✓ Lifestyle: ${lifestyleAchievements.length} new`);
     }
 
     await expireInvalidAchievements(userId, events, achievementMap);
@@ -124,9 +142,11 @@ export async function updateAchievementsEnhanced(userId: string): Promise<{
       await saveProgressUpdates(userId, progressUpdates);
     }
 
+    console.log(`✅ Achievement calculation complete: ${newAchievements.length} new achievements, ${progressUpdates.length} progress updates`);
+
     return { newAchievements, progressUpdates };
   } catch (error) {
-    console.error("Error updating achievements:", error);
+    console.error("❌ Error updating achievements:", error);
     return { newAchievements: [], progressUpdates: [] };
   }
 }
