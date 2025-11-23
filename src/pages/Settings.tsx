@@ -13,23 +13,26 @@ import { ArrowLeft, Save, Calendar as CalendarIcon, Plus, X } from "lucide-react
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
 
   const [profile, setProfile] = useState({
-    name: "Elias",
-    age: "36",
-    sex: "male",
-    height: "177",
-    weight: "73",
+    name: "",
+    age: "",
+    sex: "",
+    height: "",
+    weight: "",
   });
 
   const [health, setHealth] = useState({
-    conditions: "Monitor sugar intake - High sugar level in last blood test (borderline)",
+    conditions: "",
     medications: "",
-    supplements: "Vitamin D3 & K2 (NOW brand) - 1000 IU D3 + 45 mcg K2, 1 capsule daily, started 1 August 2025\nZinc Picolinate (NOW brand) - 50 mg, 1 capsule daily, started 1 August 2025\nFolic Acid - 5 mg, twice per week (Tuesday & Friday), started 1 August 2025\nCreatine (Vitobest Creapure) - 5 g, once daily, started 9 September 2025",
+    supplements: "",
     allergies: "",
   });
 
@@ -37,93 +40,176 @@ const Settings = () => {
     name: string;
     startDate: Date | undefined;
     endDate: Date | undefined;
-  }>>([
-    {
-      name: "Suprax (Antibiotic) - Prescribed by Dr. Ihab El Hajj for diverticulitis",
-      startDate: new Date(2025, 9, 6), // October 6, 2025
-      endDate: new Date(2025, 9, 11), // October 11, 2025
-    }
-  ]);
+  }>>([]);
 
   const [pastInjuries, setPastInjuries] = useState<Array<{
     name: string;
     date: Date | undefined;
-  }>>([
-    {
-      name: "Right Hip Labral Tear - Managed with 10 months of physiotherapy, mobility work, and rehabilitation. Regained ~80% function",
-      date: new Date(2022, 9, 20), // October 20, 2022
-    },
-    {
-      name: "Right shoulder discomfort - Mild pain during basketball",
-      date: new Date(2025, 9, 19), // October 19, 2025
-    },
-    {
-      name: "Right shoulder pain - Significant pain & limited mobility after basketball (possible strain/inflammation)",
-      date: new Date(2025, 9, 26), // October 26, 2025
-    }
-  ]);
+  }>>([]);
 
   const [pastSurgeries, setPastSurgeries] = useState<Array<{
     name: string;
     date: Date | undefined;
-  }>>([
-    {
-      name: "Lamina & Deviated Septum correction - Full recovery achieved",
-      date: new Date(2022, 2, 10), // March 10, 2022
-    }
-  ]);
+  }>>([]);
 
   const [pastInflammations, setPastInflammations] = useState<Array<{
     name: string;
     date: Date | undefined;
-  }>>([
-    {
-      name: "Diverticulitis - ER Visit (mild lower abdominal pain, confirmed by CT scan)",
-      date: new Date(2025, 8, 19), // September 19, 2025
-    },
-    {
-      name: "Follow-up with Dr. Laurence for diverticulitis monitoring",
-      date: new Date(2025, 8, 29), // September 29, 2025
-    },
-    {
-      name: "Consultation with Dr. Ihab El Hajj for diverticulitis",
-      date: new Date(2025, 9, 1), // October 1, 2025
-    }
-  ]);
+  }>>([]);
 
   const [workoutActivities, setWorkoutActivities] = useState<Array<{
     activityType: string;
     date: Date | undefined;
     duration: string;
     location: string;
-  }>>([
-    // September 2025
-    { activityType: "PT Training", date: new Date(2025, 8, 9), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
-    { activityType: "PT Session", date: new Date(2025, 8, 11), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
-    { activityType: "Yoga", date: new Date(2025, 8, 15), duration: "1h30", location: "Zen Corner – Mahmoud" },
-    { activityType: "PT Session", date: new Date(2025, 8, 16), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
-    { activityType: "Yoga", date: new Date(2025, 8, 22), duration: "1h30", location: "Zen Corner – Mahmoud" },
-    { activityType: "PT Session", date: new Date(2025, 8, 23), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
-    { activityType: "PT Session", date: new Date(2025, 8, 25), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
-    { activityType: "Basketball", date: new Date(2025, 8, 28), duration: "1h30", location: "—" },
-    { activityType: "PT Session", date: new Date(2025, 8, 30), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
-    // October 2025
-    { activityType: "PT Session", date: new Date(2025, 9, 2), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
-    { activityType: "Basketball", date: new Date(2025, 9, 5), duration: "1h30", location: "—" },
-    { activityType: "Yoga", date: new Date(2025, 9, 6), duration: "1h30", location: "Zen Corner" },
-    { activityType: "PT Session", date: new Date(2025, 9, 7), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
-    { activityType: "Yoga", date: new Date(2025, 9, 8), duration: "1h30", location: "Humm – Mahadevi" },
-    { activityType: "PT Session", date: new Date(2025, 9, 10), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
-    { activityType: "Basketball", date: new Date(2025, 9, 12), duration: "1h30", location: "—" },
-    { activityType: "Yoga", date: new Date(2025, 9, 13), duration: "1h30", location: "Zen Corner – Mahmoud" },
-    { activityType: "PT Session", date: new Date(2025, 9, 14), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
-    { activityType: "Tennis", date: new Date(2025, 9, 15), duration: "1h", location: "Yarze – Defense Ministry (First Session)" },
-    { activityType: "Basketball", date: new Date(2025, 9, 19), duration: "1h30", location: "— (Right shoulder discomfort during game)" },
-    { activityType: "PT Session", date: new Date(2025, 9, 22), duration: "1h", location: "Athlete Anonymous – Elie Warde" },
-    { activityType: "Basketball", date: new Date(2025, 9, 26), duration: "1h30", location: "— (Significant right shoulder pain, limited mobility)" },
-  ]);
+  }>>([]);
 
-  const [goals, setGoals] = useState("Maintain mobility & flexibility\nMaintain weight or lean muscle gain\nActivity Level: 5-6 sessions/week\nBMR: 1661 kcal/day\nMaintenance Calories: ~2475 kcal/day\nGoal Calories (Muscle Gain): ~2875 kcal/day\nAlcohol-Free Since: 12 Sep 2025");
+  const [goals, setGoals] = useState("");
+
+  useEffect(() => {
+    loadUserData();
+  }, [user]);
+
+  const loadUserData = async () => {
+    setLoading(true);
+    try {
+      if (!user) {
+        // Load from localStorage for guest
+        const stored = localStorage.getItem('guestProfile');
+        if (stored) {
+          const data = JSON.parse(stored);
+          setProfile({
+            name: data.profile?.name || "",
+            age: data.profile?.age || "",
+            sex: data.profile?.sex || "",
+            height: data.profile?.height || "",
+            weight: data.profile?.weight || "",
+          });
+          setHealth({
+            conditions: data.health?.conditions || "",
+            medications: data.health?.medications || "",
+            supplements: data.health?.supplements || "",
+            allergies: data.health?.allergies || "",
+          });
+          setGoals(data.goals || "");
+          setPastMedications(data.pastMedications?.map((m: any) => ({
+            name: m.name,
+            startDate: m.startDate ? new Date(m.startDate) : undefined,
+            endDate: m.endDate ? new Date(m.endDate) : undefined,
+          })) || []);
+          setPastInjuries(data.pastInjuries?.map((i: any) => ({
+            name: i.name,
+            date: i.date ? new Date(i.date) : undefined,
+          })) || []);
+          setPastSurgeries(data.pastSurgeries?.map((s: any) => ({
+            name: s.name,
+            date: s.date ? new Date(s.date) : undefined,
+          })) || []);
+          setPastInflammations(data.pastInflammations?.map((inf: any) => ({
+            name: inf.name,
+            date: inf.date ? new Date(inf.date) : undefined,
+          })) || []);
+          setWorkoutActivities(data.workoutActivities?.map((w: any) => ({
+            activityType: w.activityType,
+            date: w.date ? new Date(w.date) : undefined,
+            duration: w.duration,
+            location: w.location,
+          })) || []);
+        }
+      } else {
+        // Load from database for authenticated user
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError && profileError.code !== 'PGRST116') throw profileError;
+
+        if (profileData) {
+          setProfile({
+            name: profileData.full_name || "",
+            age: profileData.age?.toString() || "",
+            sex: profileData.sex || "",
+            height: profileData.height?.toString() || "",
+            weight: profileData.weight?.toString() || "",
+          });
+          setHealth({
+            conditions: profileData.health_conditions?.join(', ') || "",
+            medications: "",
+            supplements: profileData.medications?.join('\n') || "",
+            allergies: profileData.allergies?.join(', ') || "",
+          });
+          setGoals(profileData.goals?.join('\n') || "");
+        }
+
+        // Load timeline events
+        const { data: eventsData, error: eventsError } = await supabase
+          .from('timeline_events')
+          .select('*')
+          .eq('user_id', user.id)
+          .in('event_type', ['medication', 'injury', 'surgery', 'illness', 'workout'])
+          .order('event_date', { ascending: false });
+
+        if (eventsError) throw eventsError;
+
+        if (eventsData) {
+          const medications = eventsData
+            .filter(e => e.event_type === 'medication')
+            .map(e => ({
+              name: e.title,
+              startDate: e.prescription_start ? new Date(e.prescription_start) : undefined,
+              endDate: e.prescription_end ? new Date(e.prescription_end) : undefined,
+            }));
+
+          const injuries = eventsData
+            .filter(e => e.event_type === 'injury')
+            .map(e => ({
+              name: e.title,
+              date: new Date(e.event_date),
+            }));
+
+          const surgeries = eventsData
+            .filter(e => e.event_type === 'surgery')
+            .map(e => ({
+              name: e.title,
+              date: new Date(e.event_date),
+            }));
+
+          const inflammations = eventsData
+            .filter(e => e.event_type === 'illness')
+            .map(e => ({
+              name: e.title,
+              date: new Date(e.event_date),
+            }));
+
+          const workouts = eventsData
+            .filter(e => e.event_type === 'workout')
+            .map(e => ({
+              activityType: e.activity_type || e.title,
+              date: new Date(e.event_date),
+              duration: e.duration ? `${Math.round(e.duration / 60)}h` : "",
+              location: e.description || "",
+            }));
+
+          setPastMedications(medications);
+          setPastInjuries(injuries);
+          setPastSurgeries(surgeries);
+          setPastInflammations(inflammations);
+          setWorkoutActivities(workouts);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load your profile data.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const addPastMedication = () => {
     setPastMedications([...pastMedications, { name: "", startDate: undefined, endDate: undefined }]);
@@ -401,7 +487,7 @@ const Settings = () => {
               <Label htmlFor="name">Full Name</Label>
               <Input
                 id="name"
-                placeholder="John Doe"
+                placeholder="Enter your full name"
                 value={profile.name}
                 onChange={(e) => setProfile({ ...profile, name: e.target.value })}
               />
@@ -413,7 +499,7 @@ const Settings = () => {
                 <Input
                   id="age"
                   type="number"
-                  placeholder="30"
+                  placeholder="Enter age"
                   value={profile.age}
                   onChange={(e) => setProfile({ ...profile, age: e.target.value })}
                 />
@@ -423,7 +509,7 @@ const Settings = () => {
                 <Label htmlFor="sex">Sex</Label>
                 <Select value={profile.sex} onValueChange={(value) => setProfile({ ...profile, sex: value })}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select" />
+                    <SelectValue placeholder="Select sex" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="male">Male</SelectItem>
@@ -440,7 +526,7 @@ const Settings = () => {
                 <Input
                   id="height"
                   type="number"
-                  placeholder="175"
+                  placeholder="Enter height in cm"
                   value={profile.height}
                   onChange={(e) => setProfile({ ...profile, height: e.target.value })}
                 />
@@ -451,7 +537,7 @@ const Settings = () => {
                 <Input
                   id="weight"
                   type="number"
-                  placeholder="70"
+                  placeholder="Enter weight in kg"
                   value={profile.weight}
                   onChange={(e) => setProfile({ ...profile, weight: e.target.value })}
                 />
@@ -471,7 +557,7 @@ const Settings = () => {
               <Label htmlFor="conditions">Existing Health Conditions</Label>
               <Textarea
                 id="conditions"
-                placeholder="e.g., Diabetes, Hypertension (comma separated)"
+                placeholder="Add any existing health conditions (comma separated)"
                 value={health.conditions}
                 onChange={(e) => setHealth({ ...health, conditions: e.target.value })}
                 rows={3}
@@ -483,7 +569,7 @@ const Settings = () => {
                 <Label htmlFor="medications">Current Medications</Label>
                 <Textarea
                   id="medications"
-                  placeholder="e.g., Metformin 500mg, Lisinopril 10mg"
+                  placeholder="Add current medications"
                   value={health.medications}
                   onChange={(e) => setHealth({ ...health, medications: e.target.value })}
                   rows={3}
@@ -494,7 +580,7 @@ const Settings = () => {
                 <Label htmlFor="supplements">Current Supplements</Label>
                 <Textarea
                   id="supplements"
-                  placeholder="e.g., Vitamin D 2000IU, Omega-3"
+                  placeholder="Add current supplements (one per line)"
                   value={health.supplements}
                   onChange={(e) => setHealth({ ...health, supplements: e.target.value })}
                   rows={3}
@@ -506,7 +592,7 @@ const Settings = () => {
               <Label htmlFor="allergies">Allergies</Label>
               <Textarea
                 id="allergies"
-                placeholder="e.g., Penicillin, Peanuts (comma separated)"
+                placeholder="Add any allergies (comma separated)"
                 value={health.allergies}
                 onChange={(e) => setHealth({ ...health, allergies: e.target.value })}
                 rows={3}
@@ -532,14 +618,14 @@ const Settings = () => {
           <CardContent className="space-y-4">
             {pastMedications.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No past medications added. Click "Add" to record previous medications.
+                No past medications yet. Click "Add" to record previous medications.
               </p>
             ) : (
               pastMedications.map((med, index) => (
                 <div key={index} className="flex gap-2 items-start border rounded-lg p-4">
                   <div className="flex-1 space-y-3">
                     <Input
-                      placeholder="Medication name and dosage"
+                      placeholder="Enter medication name and dosage"
                       value={med.name}
                       onChange={(e) => updatePastMedication(index, "name", e.target.value)}
                     />
@@ -628,14 +714,14 @@ const Settings = () => {
           <CardContent className="space-y-4">
             {pastInjuries.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No past injuries added. Click "Add" to record previous injuries.
+                No past injuries yet. Click "Add" to record previous injuries.
               </p>
             ) : (
               pastInjuries.map((injury, index) => (
                 <div key={index} className="flex gap-2 items-start border rounded-lg p-4">
                   <div className="flex-1 space-y-3">
                     <Input
-                      placeholder="Injury description (e.g., Right ankle sprain)"
+                      placeholder="Enter injury description"
                       value={injury.name}
                       onChange={(e) => updatePastInjury(index, "name", e.target.value)}
                     />
@@ -696,14 +782,14 @@ const Settings = () => {
           <CardContent className="space-y-4">
             {pastSurgeries.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No past surgeries added. Click "Add" to record previous surgeries.
+                No past surgeries yet. Click "Add" to record previous surgeries.
               </p>
             ) : (
               pastSurgeries.map((surgery, index) => (
                 <div key={index} className="flex gap-2 items-start border rounded-lg p-4">
                   <div className="flex-1 space-y-3">
                     <Input
-                      placeholder="Surgery description (e.g., Appendectomy)"
+                      placeholder="Enter surgery description"
                       value={surgery.name}
                       onChange={(e) => updatePastSurgery(index, "name", e.target.value)}
                     />
@@ -764,14 +850,14 @@ const Settings = () => {
           <CardContent className="space-y-4">
             {pastInflammations.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No past inflammations added. Click "Add" to record previous inflammations.
+                No past inflammations yet. Click "Add" to record previous inflammations.
               </p>
             ) : (
               pastInflammations.map((inflammation, index) => (
                 <div key={index} className="flex gap-2 items-start border rounded-lg p-4">
                   <div className="flex-1 space-y-3">
                     <Input
-                      placeholder="Inflammation description (e.g., Tennis elbow)"
+                      placeholder="Enter inflammation description"
                       value={inflammation.name}
                       onChange={(e) => updatePastInflammation(index, "name", e.target.value)}
                     />
@@ -832,7 +918,7 @@ const Settings = () => {
           <CardContent className="space-y-4">
             {workoutActivities.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No workout activities added. Click "Add" to record training sessions.
+                No workout activities yet. Click "Add" to record training sessions.
               </p>
             ) : (
               workoutActivities.map((workout, index) => (
@@ -840,18 +926,18 @@ const Settings = () => {
                   <div className="flex-1 space-y-3">
                     <div className="grid grid-cols-2 gap-2">
                       <Input
-                        placeholder="Activity type (e.g., PT Session, Yoga)"
+                        placeholder="Enter activity type"
                         value={workout.activityType}
                         onChange={(e) => updateWorkoutActivity(index, "activityType", e.target.value)}
                       />
                       <Input
-                        placeholder="Duration (e.g., 1h, 1h30)"
+                        placeholder="Enter duration"
                         value={workout.duration}
                         onChange={(e) => updateWorkoutActivity(index, "duration", e.target.value)}
                       />
                     </div>
                     <Input
-                      placeholder="Location / Coach"
+                      placeholder="Enter location or coach name"
                       value={workout.location}
                       onChange={(e) => updateWorkoutActivity(index, "location", e.target.value)}
                     />
@@ -906,7 +992,7 @@ const Settings = () => {
               <Label htmlFor="goals">Your Goals</Label>
               <Textarea
                 id="goals"
-                placeholder="e.g., Lose 5kg, Run 5km, Lower blood pressure (comma separated)"
+                placeholder="Add your health and fitness goals (one per line)"
                 value={goals}
                 onChange={(e) => setGoals(e.target.value)}
                 rows={4}
