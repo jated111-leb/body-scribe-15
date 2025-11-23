@@ -140,9 +140,18 @@ const TimelineEntry = ({ event }: { event: any }) => {
         {event.description && (
           <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
         )}
-        {event.medication_name && (
+        {event.event_type === 'workout' && (
+          <div className="text-sm text-muted-foreground mb-2">
+            {event.duration && <span>{event.duration} min</span>}
+            {event.intensity && <span className="ml-2">• {event.intensity} intensity</span>}
+          </div>
+        )}
+        {event.event_type === 'medication' && event.dosage && (
+          <p className="text-sm text-muted-foreground mb-2">Dose: {event.dosage}</p>
+        )}
+        {event.medication_name && event.prescription_start && (
           <p className="text-sm text-muted-foreground mb-2">
-            {event.prescription_start && `Started: ${format(new Date(event.prescription_start), 'MMM d, yyyy')}`}
+            {`Started: ${format(new Date(event.prescription_start), 'MMM d, yyyy')}`}
             {event.prescription_end && ` - Ended: ${format(new Date(event.prescription_end), 'MMM d, yyyy')}`}
           </p>
         )}

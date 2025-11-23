@@ -74,20 +74,24 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
           };
           break;
         case "meal":
+          const mealTypeDisplay = mealData.type ? getMealTypeDisplay(normalizeMealType(mealData.type)) : 'Meal';
           eventData = {
             ...eventData,
             event_type: "meal",
-            title: "Meal Log",
+            title: mealTypeDisplay,
             description: mealData.items,
             meal_type: normalizeMealType(mealData.type || 'snack'),
             structured_data: { time: mealData.time },
           };
           break;
         case "workout":
+          const activityLabel = workoutData.type 
+            ? workoutData.type.split('_').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+            : 'Workout';
           eventData = {
             ...eventData,
             event_type: "workout",
-            title: "Workout Log",
+            title: activityLabel,
             activity_type: normalizeWorkoutType(workoutData.type || 'aerobic'),
             duration: workoutData.duration ? parseInt(workoutData.duration) : null,
             intensity: workoutData.intensity?.toLowerCase() || 'medium',
@@ -97,7 +101,7 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
           eventData = {
             ...eventData,
             event_type: "medication",
-            title: "Medication Log",
+            title: medicationData.name || "Medication",
             medication_name: medicationData.name,
             dosage: medicationData.dose,
             structured_data: { time: medicationData.time },
