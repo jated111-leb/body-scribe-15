@@ -156,12 +156,11 @@ const Dashboard = () => {
               <TimelineFeed />
             </TabsContent>
 
-            <TabsContent value="calendar" className="mt-0 space-y-6">
+            <TabsContent value="calendar" className="mt-0">
               <CalendarView 
                 selectedDate={selectedDate}
                 onSelectDate={setSelectedDate}
               />
-              <TimelineView selectedDate={selectedDate} />
             </TabsContent>
           </Tabs>
         </div>
