@@ -130,9 +130,11 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
     const monthEnd = endOfMonth(currentMonth);
     const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
     
-    // Get first day of month to calculate offset
+    // Get first day of month to calculate offset (0 = Sunday, 1 = Monday, etc.)
+    // Adjust so Monday = 0, Sunday = 6
     const firstDayOfWeek = monthStart.getDay();
-    const emptyDays = Array(firstDayOfWeek).fill(null);
+    const adjustedFirstDay = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+    const emptyDays = Array(adjustedFirstDay).fill(null);
     
     return (
       <div key={monthOffset} className="mb-8">
@@ -140,9 +142,9 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
           {format(currentMonth, 'MMMM yyyy')}
         </h3>
         
-        {/* Weekday headers */}
+        {/* Weekday headers - Start on Monday */}
         <div className="grid grid-cols-7 gap-2 mb-4">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
             <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
               {day}
             </div>
