@@ -93,7 +93,23 @@ serve(async (req) => {
           });
         }
 
-        results.push({ userId, newAchievements: newAchievements.length });
+        // Calculate lifestyle achievements
+        const lifestyleAchievements = await calculateLifestyleAchievements(userId, events as TimelineEvent[]);
+        
+        // Create notifications for lifestyle achievements
+        for (const lifestyle of lifestyleAchievements) {
+          await supabase.from("achievement_notifications").insert({
+            user_id: userId,
+            notification_type: "unlock",
+            message: lifestyle.insight_text,
+          });
+        }
+
+        results.push({ 
+          userId, 
+          newAchievements: newAchievements.length,
+          lifestyleAchievements: lifestyleAchievements.length
+        });
       } catch (error) {
         console.error(`Error processing user ${userId}:`, error);
       }
@@ -171,4 +187,80 @@ async function calculateAchievements(
   }
 
   return newAchievements;
+}
+
+async function calculateLifestyleAchievements(
+  userId: string,
+  events: TimelineEvent[]
+): Promise<any[]> {
+  const achievements: any[] = [];
+
+  try {
+    // Get user's active lifestyle focuses
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { data: focuses } = await supabase
+      .from("lifestyle_focus")
+      .select("*")
+      .eq("user_id", userId)
+      .in("status", ["active", "user_declared"]);
+
+    if (!focuses || focuses.length === 0) return achievements;
+
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const todayEvents = events.filter((e) => e.event_date.split("T")[0] === todayStr);
+
+    for (const focus of focuses) {
+      // Lifestyle Shift detection
+      let aligned = false;
+      let insightText = "";
+
+      if (focus.focus_type === "alcohol_free") {
+        const alcoholFreeToday = todayEvents.some(
+          (e) =>
+            e.event_type === "note" &&
+            e.description &&
+            (e.description.toLowerCase().includes("no alcohol") ||
+              e.description.toLowerCase().includes("alcohol-free"))
+        );
+        if (alcoholFreeToday) {
+          aligned = true;
+          insightText = "You chose no alcohol today — Aura will observe how this affects your sleep rhythm.";
+        }
+      }
+
+      if (focus.focus_type === "reduce_sugar") {
+        const lowSugarMeals = todayEvents.filter(
+          (e) =>
+            e.event_type === "meal" &&
+            e.description &&
+            (e.description.toLowerCase().includes("no sugar") ||
+              e.description.toLowerCase().includes("low sugar"))
+        );
+        if (lowSugarMeals.length > 0) {
+          aligned = true;
+          insightText = "Low-sugar choices today — let's observe how your energy responds.";
+        }
+      }
+
+      if (aligned) {
+        achievements.push({
+          user_id: userId,
+          focus_id: focus.id,
+          achievement_type: "lifestyle_shift",
+          title: "Intention in Action",
+          insight_text: insightText,
+          confidence: 0.6,
+        });
+      }
+    }
+
+    return achievements;
+  } catch (error) {
+    console.error("Error calculating lifestyle achievements:", error);
+    return [];
+  }
 }

@@ -8,6 +8,9 @@ import { WeeklySummary } from "@/components/dashboard/WeeklySummary";
 import { Achievements } from "@/components/dashboard/Achievements";
 import { EmergingPatterns } from "@/components/dashboard/EmergingPatterns";
 import { ContextualPrompts } from "@/components/dashboard/ContextualPrompts";
+import { LifestyleFocusManager } from "@/components/dashboard/LifestyleFocusManager";
+import { InferredPatternPrompt } from "@/components/dashboard/InferredPatternPrompt";
+import { LifestyleAchievements } from "@/components/dashboard/LifestyleAchievements";
 import { QuickLogDialog } from "@/components/dashboard/QuickLogDialog";
 import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
 import { Button } from "@/components/ui/button";
@@ -118,13 +121,22 @@ const Dashboard = () => {
           {/* Weekly Summary */}
           <WeeklySummary />
 
+          {/* Lifestyle Focus Manager */}
+          {user && <LifestyleFocusManager userId={user.id} />}
+
+          {/* Inferred Pattern Prompts */}
+          {user && <InferredPatternPrompt userId={user.id} />}
+
           {/* Contextual Prompts */}
           {user && <ContextualPrompts userId={user.id} />}
 
           {/* Emerging Patterns */}
           {user && <EmergingPatterns userId={user.id} />}
 
-          {/* Achievements */}
+          {/* Lifestyle Achievements */}
+          {user && <LifestyleAchievements userId={user.id} />}
+
+          {/* Regular Achievements */}
           {user && <Achievements userId={user.id} />}
 
           {/* Tabs for Calendar and Timeline */}

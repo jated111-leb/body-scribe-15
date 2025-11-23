@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { updateAchievementsEnhanced } from "@/lib/achievementsEnhanced";
+import { calculateLifestyleAchievements } from "@/lib/lifestyleAchievements";
 import {
   normalizeMealType, 
   normalizeWorkoutType, 
@@ -126,9 +127,18 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
 
       // Update achievements and get notifications
       const { newAchievements, progressUpdates } = await updateAchievementsEnhanced(user.id);
+      
+      // Calculate lifestyle achievements
+      const lifestyleAchievements = await calculateLifestyleAchievements(user.id);
 
-      // Show smart notification based on progress
-      if (newAchievements.length > 0) {
+      // Show smart notification based on priority
+      if (lifestyleAchievements.length > 0) {
+        const lifestyle = lifestyleAchievements[0];
+        toast({
+          title: lifestyle.title,
+          description: lifestyle.insight_text,
+        });
+      } else if (newAchievements.length > 0) {
         const achievement = newAchievements[0];
         toast({
           title: "🌱 New Pattern Detected",
