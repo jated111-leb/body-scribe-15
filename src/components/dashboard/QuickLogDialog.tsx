@@ -16,8 +16,8 @@ import { Utensils, Activity, Pill, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { updateAchievementsForUser } from "@/lib/achievements";
-import { 
+import { updateAchievementsEnhanced } from "@/lib/achievementsEnhanced";
+import {
   normalizeMealType, 
   normalizeWorkoutType, 
   normalizeSymptomType,
@@ -124,13 +124,28 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
 
       if (error) throw error;
 
-      // Update achievements after logging
-      await updateAchievementsForUser(user.id);
+      // Update achievements and get notifications
+      const { newAchievements, progressUpdates } = await updateAchievementsEnhanced(user.id);
 
-      toast({
-        title: "Entry logged!",
-        description: "Your health data has been recorded.",
-      });
+      // Show smart notification based on progress
+      if (newAchievements.length > 0) {
+        const achievement = newAchievements[0];
+        toast({
+          title: "🌱 New Pattern Detected",
+          description: achievement.insight_text,
+        });
+      } else if (progressUpdates.length > 0) {
+        const progress = progressUpdates[0];
+        toast({
+          title: "💫 Almost There",
+          description: progress.progress_message,
+        });
+      } else {
+        toast({
+          title: "Entry logged",
+          description: "Your health rhythm continues to take shape.",
+        });
+      }
       
       // Reset all form states
       setFreeText("");

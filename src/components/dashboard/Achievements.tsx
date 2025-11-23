@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { AchievementDetailModal } from "./AchievementDetailModal";
 
 interface Achievement {
   id: string;
@@ -45,6 +46,7 @@ const TYPE_COLORS: Record<string, string> = {
 export function Achievements({ userId }: { userId: string }) {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -100,9 +102,28 @@ export function Achievements({ userId }: { userId: string }) {
           <CardTitle className="text-lg font-medium">Aura Achievements</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            No achievements yet. Track your rhythm and Aura will highlight meaningful milestones.
-          </p>
+          <div className="py-8 text-center space-y-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mx-auto">
+              <Sparkles className="h-8 w-8 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">Building Your Rhythm Profile</h3>
+              <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                We need a few days of data to identify patterns. Keep tracking to unlock insights.
+              </p>
+            </div>
+            <div className="max-w-sm mx-auto space-y-2 text-left bg-muted/50 rounded-lg p-4 border">
+              <p className="text-sm font-medium">Next steps:</p>
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li>☐ Log 3 consistent meals</li>
+                <li>☐ Track 2 workouts</li>
+                <li>☐ Record any symptoms</li>
+              </ul>
+              <p className="text-xs text-muted-foreground pt-2">
+                Estimated time to first insight: 2-3 days
+              </p>
+            </div>
+          </div>
         </CardContent>
       </Card>
     );
@@ -128,7 +149,8 @@ export function Achievements({ userId }: { userId: string }) {
           return (
             <div
               key={achievement.id}
-              className="group p-4 rounded-lg border border-[#E6E8E8] bg-white hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+              onClick={() => setSelectedAchievement(achievement)}
+              className="group p-4 rounded-lg border border-[#E6E8E8] bg-white hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
             >
               <div className="flex items-start gap-3">
                 <div className="mt-0.5">
@@ -163,6 +185,12 @@ export function Achievements({ userId }: { userId: string }) {
           );
         })}
       </CardContent>
+      
+      <AchievementDetailModal
+        achievement={selectedAchievement}
+        open={!!selectedAchievement}
+        onOpenChange={(open) => !open && setSelectedAchievement(null)}
+      />
     </Card>
   );
 }
