@@ -1,50 +1,45 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Flame, Droplet, Dumbbell, Moon, Pill, Heart, Apple } from "lucide-react";
+import { 
+  Utensils, 
+  Activity, 
+  Pill, 
+  AlertCircle, 
+  TrendingDown,
+  Sparkles,
+  FileText,
+  Droplets
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
 interface Achievement {
   id: string;
-  type: string;
+  type: "consistency" | "reduction" | "correlation" | "lifestyle";
+  category: string;
   start_date: string;
   current_streak: number;
   last_event_date: string | null;
+  insight_text: string;
+  status: "active" | "expired";
 }
 
-const ACHIEVEMENT_CONFIG = {
-  alcohol_free: {
-    icon: Droplet,
-    label: "Alcohol-Free",
-    color: "text-accent",
-  },
-  sugar_free: {
-    icon: Apple,
-    label: "Sugar-Free",
-    color: "text-accent-warm",
-  },
-  exercise_streak: {
-    icon: Dumbbell,
-    label: "Exercise Streak",
-    color: "text-primary",
-  },
-  sleep_streak: {
-    icon: Moon,
-    label: "Sleep Quality",
-    color: "text-primary",
-  },
-  supplement_consistency: {
-    icon: Pill,
-    label: "Supplement Adherence",
-    color: "text-accent",
-  },
-  symptom_tracking: {
-    icon: Heart,
-    label: "Symptom Tracking",
-    color: "text-accent-warm",
-  },
+const CATEGORY_CONFIG: Record<string, { icon: any; label: string }> = {
+  workout: { icon: Activity, label: "Movement" },
+  meal: { icon: Utensils, label: "Nutrition" },
+  medication: { icon: Pill, label: "Medication" },
+  symptom: { icon: AlertCircle, label: "Symptom Tracking" },
+  note: { icon: FileText, label: "Journaling" },
+  alcohol_free: { icon: Droplets, label: "Lifestyle Shift" },
+  flexibility_pain: { icon: Sparkles, label: "Correlation Insight" },
+};
+
+const TYPE_COLORS: Record<string, string> = {
+  consistency: "text-[#6CB792]",
+  reduction: "text-[#6CB792]",
+  correlation: "text-[#6CB792]",
+  lifestyle: "text-[#6CB792]",
 };
 
 export function Achievements({ userId }: { userId: string }) {
@@ -63,11 +58,13 @@ export function Achievements({ userId }: { userId: string }) {
         .from("achievements")
         .select("*")
         .eq("user_id", userId)
-        .order("current_streak", { ascending: false });
+        .eq("status", "active")
+        .order("start_date", { ascending: false });
 
       if (error) throw error;
-      setAchievements(data || []);
+      setAchievements((data || []) as Achievement[]);
     } catch (error: any) {
+      console.error("Error loading achievements:", error);
       toast({
         title: "Error loading achievements",
         description: error.message,
@@ -80,15 +77,12 @@ export function Achievements({ userId }: { userId: string }) {
 
   if (loading) {
     return (
-      <Card>
+      <Card className="bg-[#F7F8F8] border-[#E6E8E8]">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Flame className="h-5 w-5 text-accent" />
-            Achievements
-          </CardTitle>
+          <CardTitle className="text-lg font-medium">Aura Achievements</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">Loading achievements...</p>
+          <p className="text-sm text-muted-foreground">Loading your milestones...</p>
         </CardContent>
       </Card>
     );
@@ -96,16 +90,13 @@ export function Achievements({ userId }: { userId: string }) {
 
   if (achievements.length === 0) {
     return (
-      <Card>
+      <Card className="bg-[#F7F8F8] border-[#E6E8E8]">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Flame className="h-5 w-5 text-accent" />
-            Achievements
-          </CardTitle>
+          <CardTitle className="text-lg font-medium">Aura Achievements</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            No achievements yet. Your journey starts here.
+            No achievements yet. Track your rhythm and Aura will highlight meaningful milestones.
           </p>
         </CardContent>
       </Card>
@@ -113,43 +104,98 @@ export function Achievements({ userId }: { userId: string }) {
   }
 
   return (
-    <Card>
+    <Card className="bg-[#F7F8F8] border-[#E6E8E8]">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Flame className="h-5 w-5 text-accent" />
-          Achievements
-        </CardTitle>
+        <CardTitle className="text-lg font-medium">Aura Achievements</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Personalized insights from your health patterns
+        </p>
       </CardHeader>
       <CardContent className="space-y-3">
         {achievements.map((achievement) => {
-          const config = ACHIEVEMENT_CONFIG[achievement.type as keyof typeof ACHIEVEMENT_CONFIG];
-          if (!config) return null;
-
+          const config = CATEGORY_CONFIG[achievement.category] || {
+            icon: Sparkles,
+            label: achievement.category,
+          };
           const Icon = config.icon;
-          const streakDays = achievement.current_streak;
+          const colorClass = TYPE_COLORS[achievement.type] || "text-[#6CB792]";
 
           return (
             <div
               key={achievement.id}
-              className="flex items-center justify-between p-3 rounded-lg border border-border bg-card hover:bg-accent/5 transition-colors"
+              className="group p-4 rounded-lg border border-[#E6E8E8] bg-white hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
             >
-              <div className="flex items-center gap-3">
-                <Icon className={`h-5 w-5 ${config.color}`} />
-                <div>
-                  <p className="font-medium text-sm">{config.label}</p>
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5">
+                  <Icon className={`h-5 w-5 ${colorClass}`} strokeWidth={1.5} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <div>
+                      <p className="font-medium text-base leading-tight">
+                        {getAchievementTitle(achievement)}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {config.label}
+                      </p>
+                    </div>
+                    {achievement.current_streak > 0 && (
+                      <div className="flex-shrink-0 px-2 py-1 rounded-md bg-[#6CB792]/10 text-[#6CB792] text-xs font-medium">
+                        {achievement.current_streak}{" "}
+                        {achievement.type === "consistency" ? "days" : "events"}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+                    {achievement.insight_text}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     Since {format(new Date(achievement.start_date), "MMM d, yyyy")}
                   </p>
                 </div>
               </div>
-              <Badge variant="secondary" className="gap-1">
-                <Flame className="h-3 w-3" />
-                {streakDays} {streakDays === 1 ? "day" : "days"}
-              </Badge>
             </div>
           );
         })}
       </CardContent>
     </Card>
   );
+}
+
+/**
+ * Generate meaningful achievement titles based on type and category
+ */
+function getAchievementTitle(achievement: Achievement): string {
+  const { type, category, current_streak } = achievement;
+
+  if (type === "consistency") {
+    const labels: Record<string, string> = {
+      workout: "Movement Consistency",
+      meal: "Nutrition Tracking",
+      medication: "Medication Adherence",
+      symptom: "Health Awareness",
+      note: "Reflective Practice",
+    };
+    return labels[category] || "Consistent Tracking";
+  }
+
+  if (type === "reduction") {
+    return "Symptom Improvement";
+  }
+
+  if (type === "correlation") {
+    if (category.includes("flexibility")) {
+      return "Mind-Body Connection";
+    }
+    return "Behavioral Insight";
+  }
+
+  if (type === "lifestyle") {
+    if (category.includes("alcohol")) {
+      return "Mindful Moderation";
+    }
+    return "Lifestyle Evolution";
+  }
+
+  return "Health Milestone";
 }
