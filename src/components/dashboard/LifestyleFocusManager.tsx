@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Leaf, Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +24,8 @@ export function LifestyleFocusManager({ userId }: { userId: string }) {
   const [selectedFocuses, setSelectedFocuses] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showAlcoholPrompt, setShowAlcoholPrompt] = useState(false);
+  const [alcoholFreeDays, setAlcoholFreeDays] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -60,6 +63,15 @@ export function LifestyleFocusManager({ userId }: { userId: string }) {
       const existingTypes = focuses.map((f) => f.focus_type);
       const newFocuses = selectedFocuses.filter((type) => !existingTypes.includes(type));
       
+      // Check if alcohol_free is newly selected
+      const isAlcoholFreeNew = newFocuses.includes("alcohol_free") && !existingTypes.includes("alcohol_free");
+      
+      if (isAlcoholFreeNew) {
+        setShowAlcoholPrompt(true);
+        setLoading(false);
+        return;
+      }
+      
       if (newFocuses.length > 0) {
         await supabase.from("lifestyle_focus").insert(
           newFocuses.map((type) => ({
@@ -77,6 +89,46 @@ export function LifestyleFocusManager({ userId }: { userId: string }) {
       });
 
       setOpen(false);
+      await loadFocuses();
+    } catch (error: any) {
+      console.error("Error saving focuses:", error);
+      toast({
+        title: "Error updating focuses",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAlcoholFreeBaseline = async () => {
+    setLoading(true);
+    try {
+      const existingTypes = focuses.map((f) => f.focus_type);
+      const newFocuses = selectedFocuses.filter((type) => !existingTypes.includes(type));
+      
+      await supabase.from("lifestyle_focus").insert(
+        newFocuses.map((type) => ({
+          user_id: userId,
+          focus_type: type,
+          status: "user_declared",
+          confidence: 1.0,
+        }))
+      );
+
+      const daysMessage = alcoholFreeDays 
+        ? `Aura will observe these patterns starting from your ${alcoholFreeDays}-day baseline.`
+        : "Aura will observe these patterns and highlight meaningful changes.";
+
+      toast({
+        title: "Lifestyle focus updated",
+        description: daysMessage,
+      });
+
+      setShowAlcoholPrompt(false);
+      setOpen(false);
+      setAlcoholFreeDays("");
       await loadFocuses();
     } catch (error: any) {
       console.error("Error saving focuses:", error);
@@ -176,6 +228,40 @@ export function LifestyleFocusManager({ userId }: { userId: string }) {
                 </Button>
                 <Button onClick={handleSaveFocuses} disabled={loading}>
                   Save Focus Areas
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
+          <Dialog open={showAlcoholPrompt} onOpenChange={setShowAlcoholPrompt}>
+            <DialogContent className="sm:max-w-[400px]">
+              <DialogHeader>
+                <DialogTitle>Alcohol-Free Baseline</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <p className="text-sm text-muted-foreground">
+                  How many days have you been alcohol-free?
+                </p>
+                <p className="text-xs text-muted-foreground italic">
+                  This helps Aura understand your starting point — no pressure, just context.
+                </p>
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="e.g., 7"
+                  value={alcoholFreeDays}
+                  onChange={(e) => setAlcoholFreeDays(e.target.value)}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => {
+                  setShowAlcoholPrompt(false);
+                  setAlcoholFreeDays("");
+                }}>
+                  Skip
+                </Button>
+                <Button onClick={handleAlcoholFreeBaseline} disabled={loading}>
+                  Continue
                 </Button>
               </div>
             </DialogContent>

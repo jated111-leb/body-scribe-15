@@ -135,12 +135,17 @@ async function detectLifestyleShift(
 
   switch (focus.focus_type) {
     case "alcohol_free":
-      // Check for explicit alcohol-free notes or absence of alcohol mentions
+      // Check for moment logs or explicit alcohol-free notes
       const alcoholFreeToday = todayEvents.some(
         (e) =>
-          e.event_type === "note" &&
-          (e.description?.toLowerCase().includes("no alcohol") ||
-            e.description?.toLowerCase().includes("alcohol-free"))
+          (e.event_type === "moment" && 
+            typeof e.structured_data === 'object' && 
+            e.structured_data !== null && 
+            'moment_type' in e.structured_data && 
+            e.structured_data.moment_type === "alcohol_free") ||
+          (e.event_type === "note" &&
+            (e.description?.toLowerCase().includes("no alcohol") ||
+              e.description?.toLowerCase().includes("alcohol-free")))
       );
       if (alcoholFreeToday) {
         aligned = true;
@@ -150,11 +155,15 @@ async function detectLifestyleShift(
       break;
 
     case "reduce_sugar":
-      // Check for low-sugar meal mentions
+      // Check for low-sugar meal tags or mentions
       const lowSugarMeals = todayEvents.filter(
         (e) =>
           e.event_type === "meal" &&
-          (e.description?.toLowerCase().includes("no sugar") ||
+          (typeof e.structured_data === 'object' && 
+            e.structured_data !== null && 
+            'sugar_level' in e.structured_data && 
+            e.structured_data.sugar_level === "low" ||
+            e.description?.toLowerCase().includes("no sugar") ||
             e.description?.toLowerCase().includes("low sugar") ||
             e.description?.toLowerCase().includes("sugar-free"))
       );
@@ -180,12 +189,17 @@ async function detectLifestyleShift(
       break;
 
     case "reduce_caffeine":
-      // Check for caffeine-free mentions
+      // Check for caffeine skip moment or caffeine-free mentions
       const caffeineFree = todayEvents.some(
         (e) =>
-          e.event_type === "note" &&
-          (e.description?.toLowerCase().includes("no caffeine") ||
-            e.description?.toLowerCase().includes("caffeine-free"))
+          (e.event_type === "moment" && 
+            typeof e.structured_data === 'object' && 
+            e.structured_data !== null && 
+            'moment_type' in e.structured_data && 
+            e.structured_data.moment_type === "caffeine_skip") ||
+          (e.event_type === "note" &&
+            (e.description?.toLowerCase().includes("no caffeine") ||
+              e.description?.toLowerCase().includes("caffeine-free")))
       );
       if (caffeineFree) {
         aligned = true;
@@ -466,12 +480,17 @@ export async function inferLifestylePatterns(userId: string): Promise<
 
     if (!events || events.length === 0) return patterns;
 
-    // Detect alcohol-free pattern (3+ mentions)
+    // Detect alcohol-free pattern (3+ moments or mentions)
     const alcoholFreeMentions = events.filter(
       (e) =>
-        e.event_type === "note" &&
-        (e.description?.toLowerCase().includes("no alcohol") ||
-          e.description?.toLowerCase().includes("alcohol-free"))
+        (e.event_type === "moment" && 
+          typeof e.structured_data === 'object' && 
+          e.structured_data !== null && 
+          'moment_type' in e.structured_data && 
+          e.structured_data.moment_type === "alcohol_free") ||
+        (e.event_type === "note" &&
+          (e.description?.toLowerCase().includes("no alcohol") ||
+            e.description?.toLowerCase().includes("alcohol-free")))
     );
     if (alcoholFreeMentions.length >= 3) {
       patterns.push({
@@ -479,6 +498,40 @@ export async function inferLifestylePatterns(userId: string): Promise<
         detection_count: alcoholFreeMentions.length,
         confidence: Math.min(0.5 + alcoholFreeMentions.length * 0.1, 0.9),
         message: "It looks like you're choosing alcohol-free days. Want Aura to observe this?",
+      });
+    }
+
+    // Detect caffeine reduction pattern
+    const caffeineSkips = events.filter(
+      (e) => e.event_type === "moment" && 
+        typeof e.structured_data === 'object' && 
+        e.structured_data !== null && 
+        'moment_type' in e.structured_data && 
+        e.structured_data.moment_type === "caffeine_skip"
+    );
+    if (caffeineSkips.length >= 3) {
+      patterns.push({
+        pattern_type: "reduce_caffeine",
+        detection_count: caffeineSkips.length,
+        confidence: Math.min(0.5 + caffeineSkips.length * 0.1, 0.9),
+        message: "It looks like you're reducing caffeine. Want Aura to observe this?",
+      });
+    }
+
+    // Detect tea substitution pattern
+    const teaMoments = events.filter(
+      (e) => e.event_type === "moment" && 
+        typeof e.structured_data === 'object' && 
+        e.structured_data !== null && 
+        'moment_type' in e.structured_data && 
+        e.structured_data.moment_type === "tea"
+    );
+    if (teaMoments.length >= 3) {
+      patterns.push({
+        pattern_type: "reduce_caffeine",
+        detection_count: teaMoments.length,
+        confidence: Math.min(0.4 + teaMoments.length * 0.08, 0.8),
+        message: "It looks like you're choosing tea more often. Want Aura to observe this shift?",
       });
     }
 
@@ -498,7 +551,7 @@ export async function inferLifestylePatterns(userId: string): Promise<
       });
     }
 
-    // Detect high-vegetable meals
+    // Detect high-vegetable meals or low-sugar patterns
     const vegMeals = events.filter(
       (e) =>
         e.event_type === "meal" &&
@@ -513,6 +566,23 @@ export async function inferLifestylePatterns(userId: string): Promise<
         confidence: Math.min(0.5 + vegMeals.length * 0.1, 0.9),
         message:
           "It looks like you're increasing vegetable intake. Want Aura to observe gut health?",
+      });
+    }
+
+    // Detect low-sugar meal pattern
+    const lowSugarMeals = events.filter(
+      (e) => e.event_type === "meal" && 
+        typeof e.structured_data === 'object' && 
+        e.structured_data !== null && 
+        'sugar_level' in e.structured_data && 
+        e.structured_data.sugar_level === "low"
+    );
+    if (lowSugarMeals.length >= 3) {
+      patterns.push({
+        pattern_type: "reduce_sugar",
+        detection_count: lowSugarMeals.length,
+        confidence: Math.min(0.5 + lowSugarMeals.length * 0.1, 0.9),
+        message: "It looks like you're choosing lower sugar meals. Want Aura to observe this?",
       });
     }
 
