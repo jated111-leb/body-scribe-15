@@ -32,6 +32,29 @@ export function LifestyleFocusManager({ userId }: { userId: string }) {
     loadFocuses();
   }, [userId]);
 
+  // Realtime subscription for lifestyle focus changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('lifestyle-focus-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'lifestyle_focus',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          loadFocuses();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
   const loadFocuses = async () => {
     try {
       const { data, error } = await supabase

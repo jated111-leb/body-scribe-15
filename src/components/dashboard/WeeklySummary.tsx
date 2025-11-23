@@ -113,10 +113,13 @@ export const WeeklySummary = ({ userId }: WeeklySummaryProps) => {
     setGenerating(true);
 
     try {
+      // Send date in YYYY-MM-DD format to avoid timezone issues
+      const weekStartDateStr = format(currentWeekStart, 'yyyy-MM-dd');
+      
       const { data, error } = await supabase.functions.invoke("generate-weekly-summary", {
         body: {
           userId: userId, // Only pass userId if viewing another user's summary
-          weekStartDate: currentWeekStart.toISOString(),
+          weekStartDate: weekStartDateStr,
         },
       });
 

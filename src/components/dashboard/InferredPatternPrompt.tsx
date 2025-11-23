@@ -13,6 +13,29 @@ export function InferredPatternPrompt({ userId }: { userId: string }) {
     checkPatterns();
   }, [userId]);
 
+  // Realtime subscription for inferred patterns
+  useEffect(() => {
+    const channel = supabase
+      .channel('inferred-patterns-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'inferred_patterns',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          checkPatterns();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
   const checkPatterns = async () => {
     try {
       // Get patterns that haven't been shown yet

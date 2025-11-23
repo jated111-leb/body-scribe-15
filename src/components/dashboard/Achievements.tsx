@@ -53,6 +53,29 @@ export function Achievements({ userId }: { userId: string }) {
     loadAchievements();
   }, [userId]);
 
+  // Realtime subscription for achievements
+  useEffect(() => {
+    const channel = supabase
+      .channel('achievements-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'achievements',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          loadAchievements();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
   const loadAchievements = async () => {
     try {
       setLoading(true);

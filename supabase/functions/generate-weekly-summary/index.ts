@@ -64,13 +64,17 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Failed to load profile");
     }
 
-    // Fetch timeline events for the week
+    // Fetch timeline events for the week using date comparison (not timestamp)
+    // Format dates as YYYY-MM-DD to avoid timezone issues
+    const startDateStr = startDate.toISOString().split('T')[0];
+    const endDateStr = endDate.toISOString().split('T')[0];
+    
     const { data: events, error: eventsError } = await supabaseClient
       .from("timeline_events")
       .select("*")
       .eq("user_id", targetUserId)
-      .gte("event_date", startDate.toISOString())
-      .lte("event_date", endDate.toISOString())
+      .gte("event_date", startDateStr)
+      .lte("event_date", endDateStr)
       .order("event_date", { ascending: true });
 
     if (eventsError) {
