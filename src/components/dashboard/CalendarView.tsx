@@ -75,6 +75,32 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
     loadEventDates();
   }, [user, clientId]);
 
+  // Realtime subscription to refresh calendar when events change
+  useEffect(() => {
+    if (!user) return;
+
+    const targetUserId = clientId || user.id;
+    const channel = supabase
+      .channel('calendar-events-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'timeline_events',
+          filter: `user_id=eq.${targetUserId}`,
+        },
+        () => {
+          loadEventDates();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, clientId]);
+
   const loadEventDates = async () => {
     if (!user) {
       const guestEvents = getGuestEvents();

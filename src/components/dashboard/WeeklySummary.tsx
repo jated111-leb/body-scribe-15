@@ -304,6 +304,9 @@ export const WeeklySummary = ({ userId }: WeeklySummaryProps) => {
           <div className="text-center py-8">
             <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Understanding Awaits</h3>
+            <p className="text-sm text-muted-foreground mb-2">
+              Week: {format(currentWeekStart, 'MMM d')} - {format(currentWeekEnd, 'MMM d, yyyy')}
+            </p>
             <p className="text-sm text-muted-foreground mb-4">
               Aura will interpret this week's signals into clear, meaningful insights
             </p>
