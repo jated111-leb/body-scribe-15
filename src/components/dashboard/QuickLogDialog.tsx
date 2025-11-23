@@ -164,11 +164,18 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
 
       if (error) throw error;
 
+      console.log('✅ Event saved, calculating achievements...');
+
       // Update achievements and get notifications
       const { newAchievements, progressUpdates } = await updateAchievementsEnhanced(user.id);
+      console.log('📊 Achievement calculation complete:', { 
+        newAchievements: newAchievements.length, 
+        progressUpdates: progressUpdates.length 
+      });
       
       // Calculate lifestyle achievements
       const lifestyleAchievements = await calculateLifestyleAchievements(user.id);
+      console.log('🌱 Lifestyle achievements calculated:', lifestyleAchievements.length);
 
       // Show smart notification based on priority
       if (lifestyleAchievements.length > 0) {

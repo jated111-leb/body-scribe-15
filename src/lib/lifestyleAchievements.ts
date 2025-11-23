@@ -38,6 +38,8 @@ export async function calculateLifestyleAchievements(
   const achievements: LifestyleAchievement[] = [];
 
   try {
+    console.log('🌱 Starting lifestyle achievement calculation for user:', userId);
+    
     // Get user's active lifestyle focuses
     const { data: focuses } = await supabase
       .from("lifestyle_focus")
@@ -45,7 +47,12 @@ export async function calculateLifestyleAchievements(
       .eq("user_id", userId)
       .in("status", ["active", "user_declared"]);
 
-    if (!focuses || focuses.length === 0) return achievements;
+    if (!focuses || focuses.length === 0) {
+      console.log('⚠️ No active lifestyle focuses found');
+      return achievements;
+    }
+    
+    console.log(`🎯 Found ${focuses.length} active lifestyle focuses:`, focuses.map(f => f.focus_type));
 
     // Get recent events (last 14 days)
     const fourteenDaysAgo = subDays(new Date(), 14).toISOString();
@@ -56,16 +63,26 @@ export async function calculateLifestyleAchievements(
       .gte("event_date", fourteenDaysAgo)
       .order("event_date", { ascending: false });
 
-    if (!events || events.length === 0) return achievements;
+    if (!events || events.length === 0) {
+      console.log('⚠️ No recent events found');
+      return achievements;
+    }
+    
+    console.log(`📅 Analyzing ${events.length} recent events`);
 
     // Process each focus
     for (const focus of focuses as LifestyleFocus[]) {
+      console.log(`  → Checking focus: ${focus.focus_type}`);
+      
       // Lifestyle Shift achievements
       const shiftAchievements = await detectLifestyleShift(
         userId,
         focus,
         events as TimelineEvent[]
       );
+      if (shiftAchievements.length > 0) {
+        console.log(`    ✓ Detected ${shiftAchievements.length} lifestyle shift(s)`);
+      }
       achievements.push(...shiftAchievements);
 
       // Avoidance achievements
@@ -74,6 +91,9 @@ export async function calculateLifestyleAchievements(
         focus,
         events as TimelineEvent[]
       );
+      if (avoidanceAchievements.length > 0) {
+        console.log(`    ✓ Detected ${avoidanceAchievements.length} avoidance(s)`);
+      }
       achievements.push(...avoidanceAchievements);
 
       // Recovery-safe achievements
@@ -82,6 +102,9 @@ export async function calculateLifestyleAchievements(
         focus,
         events as TimelineEvent[]
       );
+      if (recoverySafeAchievements.length > 0) {
+        console.log(`    ✓ Detected ${recoverySafeAchievements.length} recovery-safe achievement(s)`);
+      }
       achievements.push(...recoverySafeAchievements);
 
       // Restart achievements
@@ -90,8 +113,13 @@ export async function calculateLifestyleAchievements(
         focus,
         events as TimelineEvent[]
       );
+      if (restartAchievements.length > 0) {
+        console.log(`    ✓ Detected ${restartAchievements.length} restart(s)`);
+      }
       achievements.push(...restartAchievements);
     }
+
+    console.log(`✅ Lifestyle achievement calculation complete: ${achievements.length} total achievements`);
 
     // Save new achievements
     for (const achievement of achievements) {
@@ -100,7 +128,7 @@ export async function calculateLifestyleAchievements(
 
     return achievements;
   } catch (error) {
-    console.error("Error calculating lifestyle achievements:", error);
+    console.error("❌ Error calculating lifestyle achievements:", error);
     return [];
   }
 }
