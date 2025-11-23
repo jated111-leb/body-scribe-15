@@ -2,12 +2,53 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Lightbulb } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getContextualPrompts } from "@/lib/achievementsEnhanced";
+import { supabase } from "@/integrations/supabase/client";
 
 export function ContextualPrompts({ userId }: { userId: string }) {
   const [prompts, setPrompts] = useState<string[]>([]);
 
   useEffect(() => {
     loadPrompts();
+  }, [userId]);
+
+  // Realtime subscription to refresh prompts when achievements or progress changes
+  useEffect(() => {
+    const achievementsChannel = supabase
+      .channel('contextual-prompts-achievements')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'achievements',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          loadPrompts();
+        }
+      )
+      .subscribe();
+
+    const progressChannel = supabase
+      .channel('contextual-prompts-progress')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'achievement_progress',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          loadPrompts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(achievementsChannel);
+      supabase.removeChannel(progressChannel);
+    };
   }, [userId]);
 
   const loadPrompts = async () => {

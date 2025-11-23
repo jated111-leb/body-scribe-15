@@ -20,6 +20,68 @@ export const ProfileSummary = () => {
     loadAchievements();
   }, [user]);
 
+  // Realtime subscriptions for auto-updates
+  useEffect(() => {
+    if (!user) return;
+
+    // Subscribe to profile changes
+    const profileChannel = supabase
+      .channel('profile-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`,
+        },
+        () => {
+          loadProfile();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to timeline events for activities
+    const eventsChannel = supabase
+      .channel('timeline-events-for-profile')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'timeline_events',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          loadActivities();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to achievements
+    const achievementsChannel = supabase
+      .channel('achievements-for-profile')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'achievements',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          loadAchievements();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(profileChannel);
+      supabase.removeChannel(eventsChannel);
+      supabase.removeChannel(achievementsChannel);
+    };
+  }, [user]);
+
   const loadAchievements = async () => {
     try {
       if (user) {
