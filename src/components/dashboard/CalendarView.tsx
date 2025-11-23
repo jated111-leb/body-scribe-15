@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getGuestEvents, TimelineEvent } from "@/lib/demo";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, isSameDay } from "date-fns";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Utensils, Moon, Pill, Zap, Activity, Brain, StickyNote } from "lucide-react";
 
 interface CalendarViewProps {
   selectedDate: Date;
@@ -14,6 +15,22 @@ interface CalendarViewProps {
 export type StoryDay = {
   date: string; // ISO date, e.g. "2025-10-07"
   thumbnailUrl: string;
+};
+
+type CategoryConfig = {
+  icon: React.ReactNode;
+  label: string;
+  color: string;
+};
+
+const CATEGORY_MAP: Record<string, CategoryConfig> = {
+  meal: { icon: <Utensils className="w-3 h-3" />, label: "Meals", color: "bg-orange-500" },
+  sleep: { icon: <Moon className="w-3 h-3" />, label: "Sleep", color: "bg-indigo-500" },
+  medication: { icon: <Pill className="w-3 h-3" />, label: "Supplements", color: "bg-green-500" },
+  workout: { icon: <Zap className="w-3 h-3" />, label: "Activity", color: "bg-yellow-500" },
+  injury: { icon: <Activity className="w-3 h-3" />, label: "Symptoms", color: "bg-red-500" },
+  mood: { icon: <Brain className="w-3 h-3" />, label: "Mood", color: "bg-purple-500" },
+  doctor_visit: { icon: <StickyNote className="w-3 h-3" />, label: "Notes", color: "bg-blue-500" },
 };
 
 // Normalize to local YYYY-MM-DD to avoid timezone shifts
@@ -27,7 +44,6 @@ const toLocalDateKey = (input: string | Date): string => {
 };
 
 export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarViewProps) => {
-  const [storyDays, setStoryDays] = useState<Map<string, StoryDay>>(new Map());
   const [eventsByDate, setEventsByDate] = useState<Map<string, TimelineEvent[]>>(new Map());
   const [selectedDayStories, setSelectedDayStories] = useState<TimelineEvent[] | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -42,7 +58,6 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
     if (!user) {
       const guestEvents = getGuestEvents();
       const eventsMap = new Map<string, TimelineEvent[]>();
-      const stories = new Map<string, StoryDay>();
       
       guestEvents.forEach(event => {
         const dateKey = toLocalDateKey(event.event_date);
@@ -50,18 +65,9 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
           eventsMap.set(dateKey, []);
         }
         eventsMap.get(dateKey)?.push(event);
-        
-        // Create story day with thumbnail if event has attachments
-        if (event.attachment_urls && event.attachment_urls.length > 0) {
-          stories.set(dateKey, {
-            date: dateKey,
-            thumbnailUrl: event.attachment_urls[0]
-          });
-        }
       });
       
       setEventsByDate(eventsMap);
-      setStoryDays(stories);
       return;
     }
 
@@ -76,7 +82,6 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
     }
 
     const eventsMap = new Map<string, TimelineEvent[]>();
-    const stories = new Map<string, StoryDay>();
     
     data.forEach(event => {
       const dateKey = toLocalDateKey(event.event_date);
@@ -84,18 +89,9 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
         eventsMap.set(dateKey, []);
       }
       eventsMap.get(dateKey)?.push(event as TimelineEvent);
-      
-      // Create story day with thumbnail if event has attachments
-      if (event.attachment_urls && event.attachment_urls.length > 0) {
-        stories.set(dateKey, {
-          date: dateKey,
-          thumbnailUrl: event.attachment_urls[0]
-        });
-      }
     });
     
     setEventsByDate(eventsMap);
-    setStoryDays(stories);
   };
 
   const handleDayClick = (date: Date, dateKey: string) => {
@@ -142,37 +138,51 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
           {/* Actual days */}
           {days.map(day => {
             const dateKey = format(day, 'yyyy-MM-dd');
-            const storyDay = storyDays.get(dateKey);
+            const events = eventsByDate.get(dateKey);
             const isSelected = isSameDay(day, selectedDate);
+            const hasEvents = events && events.length > 0;
+            
+            // Get unique categories for this day
+            const categories = hasEvents 
+              ? Array.from(new Set(events.map(e => e.event_type)))
+              : [];
             
             return (
               <button
                 key={dateKey}
                 onClick={() => handleDayClick(day, dateKey)}
                 className={`
-                  aspect-square rounded-full flex items-center justify-center relative
+                  aspect-square rounded-lg flex flex-col items-center justify-center relative
                   transition-all duration-200
                   ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}
-                  ${storyDay ? 'p-0' : 'hover:bg-accent'}
+                  ${hasEvents ? 'hover:bg-accent/50' : 'hover:bg-accent'}
                 `}
               >
-                {storyDay ? (
-                  <div className="w-full h-full rounded-full overflow-hidden relative">
-                    <img 
-                      src={storyDay.thumbnailUrl} 
-                      alt={`Story from ${dateKey}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                      <span className="text-white font-semibold text-sm drop-shadow-lg">
-                        {day.getDate()}
-                      </span>
-                    </div>
+                <span className={`text-sm ${hasEvents ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
+                  {day.getDate()}
+                </span>
+                
+                {/* Category icon badges */}
+                {hasEvents && (
+                  <div className="flex gap-0.5 mt-1">
+                    {categories.slice(0, 3).map((eventType) => {
+                      const config = CATEGORY_MAP[eventType];
+                      if (!config) return null;
+                      return (
+                        <div 
+                          key={eventType}
+                          className={`${config.color} rounded-full p-0.5 text-white`}
+                        >
+                          {config.icon}
+                        </div>
+                      );
+                    })}
+                    {categories.length > 3 && (
+                      <div className="bg-muted rounded-full w-3 h-3 flex items-center justify-center">
+                        <span className="text-[8px] text-muted-foreground">+</span>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <span className="text-sm text-muted-foreground">
-                    {day.getDate()}
-                  </span>
                 )}
               </button>
             );
@@ -198,41 +208,73 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
             </SheetTitle>
           </SheetHeader>
           
-          <div className="mt-6 space-y-4">
-            {selectedDayStories?.map((story) => (
-              <div key={story.id} className="flex gap-4 p-4 rounded-lg bg-accent/50 hover:bg-accent transition-colors">
-                {story.attachment_urls && story.attachment_urls.length > 0 && (
-                  <img 
-                    src={story.attachment_urls[0]} 
-                    alt={story.title}
-                    className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-                  />
-                )}
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <h4 className="font-semibold text-foreground">{story.title}</h4>
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(story.created_at || story.event_date), 'h:mm a')}
-                    </span>
+          <div className="mt-6 space-y-6">
+            {selectedDayStories && (() => {
+              // Group events by category
+              const grouped = selectedDayStories.reduce((acc, event) => {
+                const type = event.event_type;
+                if (!acc[type]) acc[type] = [];
+                acc[type].push(event);
+                return acc;
+              }, {} as Record<string, TimelineEvent[]>);
+
+              return Object.entries(grouped).map(([eventType, events]) => {
+                const config = CATEGORY_MAP[eventType];
+                if (!config) return null;
+
+                // Get all photos from all events in this category
+                const allPhotos = events.flatMap(e => e.attachment_urls || []);
+                const firstPhoto = allPhotos[0];
+                const photoCount = allPhotos.length;
+
+                return (
+                  <div key={eventType} className="border border-border rounded-lg p-4">
+                    {/* Category header with first photo + badge */}
+                    <div className="flex items-center gap-3 mb-3">
+                      {firstPhoto && (
+                        <div className="relative">
+                          <img 
+                            src={firstPhoto} 
+                            alt={config.label}
+                            className="w-16 h-16 rounded-lg object-cover"
+                          />
+                          {photoCount > 1 && (
+                            <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
+                              +{photoCount - 1}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <div className={`${config.color} rounded-full p-1.5 text-white`}>
+                          {config.icon}
+                        </div>
+                        <h4 className="font-semibold text-foreground">{config.label}</h4>
+                      </div>
+                    </div>
+
+                    {/* Event list */}
+                    <div className="space-y-2 ml-1">
+                      {events.map((event) => (
+                        <div key={event.id} className="text-sm">
+                          <div className="flex items-center justify-between">
+                            <span className="text-foreground">{event.title}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {format(new Date(event.created_at || event.event_date), 'h:mm a')}
+                            </span>
+                          </div>
+                          {event.description && (
+                            <p className="text-muted-foreground line-clamp-1 mt-0.5">
+                              {event.description}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  {story.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {story.description}
-                    </p>
-                  )}
-                  <div className="mt-2 flex gap-2 flex-wrap">
-                    <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
-                      {story.event_type}
-                    </span>
-                    {story.meal_type && (
-                      <span className="text-xs px-2 py-1 rounded-full bg-secondary/10 text-secondary">
-                        {story.meal_type}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+                );
+              });
+            })()}
           </div>
         </SheetContent>
       </Sheet>
