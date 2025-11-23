@@ -62,7 +62,12 @@ export function Achievements({ userId }: { userId: string }) {
         .order("start_date", { ascending: false });
 
       if (error) throw error;
-      setAchievements((data || []) as Achievement[]);
+      
+      // Filter out malformed achievements (old data structure)
+      const validAchievements = (data || []).filter(
+        (achievement) => achievement.category && achievement.insight_text
+      );
+      setAchievements(validAchievements as Achievement[]);
     } catch (error: any) {
       console.error("Error loading achievements:", error);
       toast({
