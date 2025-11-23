@@ -10,13 +10,33 @@ import { differenceInDays, format } from "date-fns";
 export const ProfileSummary = () => {
   const [profile, setProfile] = useState<any>(null);
   const [activities, setActivities] = useState<string[]>([]);
+  const [achievements, setAchievements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
   useEffect(() => {
     loadProfile();
     loadActivities();
+    loadAchievements();
   }, [user]);
+
+  const loadAchievements = async () => {
+    try {
+      if (user) {
+        const { data, error } = await supabase
+          .from('achievements')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+        setAchievements(data || []);
+      } else {
+        setAchievements([]);
+      }
+    } catch (error) {
+      console.error('Error loading achievements:', error);
+    }
+  };
 
   const loadActivities = async () => {
     try {
@@ -101,14 +121,6 @@ export const ProfileSummary = () => {
 
   if (loading) return null;
   if (!profile) return null;
-
-  const alcoholFreeDate = new Date(2025, 8, 12); // September 12, 2025
-  const alcoholFreeStreak = differenceInDays(new Date(), alcoholFreeDate);
-  const formattedAlcoholFreeDate = format(alcoholFreeDate, 'd MMM yyyy');
-  
-  const processedFoodFreeDate = new Date(2025, 8, 12); // September 12, 2025
-  const processedFoodStreak = differenceInDays(new Date(), processedFoodFreeDate);
-  const formattedProcessedFoodFreeDate = format(processedFoodFreeDate, 'd MMM yyyy');
 
   return (
     <Card>
@@ -229,20 +241,29 @@ export const ProfileSummary = () => {
         )}
 
         {/* Achievements */}
-        <div className="space-y-2">
-          <h4 className="font-semibold text-sm flex items-center gap-2">
-            <Target className="h-4 w-4 text-green-600" />
-            Achievements
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary" className="text-xs bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400">
-              Alcohol-free Since: {formattedAlcoholFreeDate} - {alcoholFreeStreak} days streak
-            </Badge>
-            <Badge variant="secondary" className="text-xs bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400">
-              No processed food & sugar intake Since: {formattedProcessedFoodFreeDate} - {processedFoodStreak} days streak
-            </Badge>
+        {achievements.length > 0 && (
+          <div className="space-y-2">
+            <h4 className="font-semibold text-sm flex items-center gap-2">
+              <Target className="h-4 w-4 text-green-600" />
+              Achievements
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {achievements.map((achievement) => {
+                const streak = achievement.current_streak || 0;
+                const startDate = achievement.start_date ? format(new Date(achievement.start_date), 'd MMM yyyy') : '';
+                return (
+                  <Badge 
+                    key={achievement.id} 
+                    variant="secondary" 
+                    className="text-xs bg-green-100 dark:bg-green-950/30 text-green-700 dark:text-green-400"
+                  >
+                    {achievement.type} - {streak} days streak (Since {startDate})
+                  </Badge>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

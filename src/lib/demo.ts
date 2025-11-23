@@ -109,55 +109,8 @@ const getGuestEventsFromStorage = (): TimelineEvent[] => {
   }
 };
 
-// Default guest events (your personal information)
-const getDefaultGuestEvents = (): TimelineEvent[] => [
-  {
-    id: 'guest-1',
-    event_type: 'medication',
-    title: 'Suprax (Antibiotic)',
-    event_date: new Date(2025, 9, 6, 9, 0, 0).toISOString(),
-    medication_name: 'Suprax',
-    prescription_start: '2025-10-06',
-    prescription_end: '2025-10-11',
-    description: 'Taking Suprax for 6 days',
-  },
-  {
-    id: 'guest-2',
-    event_type: 'injury',
-    title: 'Right Hip labrum tear',
-    event_date: new Date(2022, 9, 20, 12, 0, 0).toISOString(),
-    description: 'Right Hip labrum tear',
-  },
-  {
-    id: 'guest-3',
-    event_type: 'injury',
-    title: 'Right shoulder discomfort',
-    event_date: new Date(2025, 9, 19, 18, 30, 0).toISOString(),
-    description: 'Right shoulder discomfort',
-  },
-  {
-    id: 'guest-4',
-    event_type: 'injury',
-    title: 'Right shoulder Labrum tear',
-    event_date: new Date(2025, 9, 26, 14, 0, 0).toISOString(),
-    description: 'Right shoulder Labrum tear',
-  },
-  {
-    id: 'guest-5',
-    event_type: 'surgery',
-    title: 'Deviated Septum Surgery',
-    event_date: new Date(2025, 2, 10, 8, 0, 0).toISOString(),
-    description: 'Deviated Septum Surgery',
-  },
-  {
-    id: 'guest-6',
-    event_type: 'illness',
-    title: 'Diverticulitis - ER Visit',
-    event_date: new Date(2025, 9, 6, 20, 0, 0).toISOString(),
-    description: 'ER Visit for Diverticulitis',
-    severity: 'high',
-  },
-];
+// Default guest events (empty for new users)
+const getDefaultGuestEvents = (): TimelineEvent[] => [];
 
 export const getGuestEvents = (): TimelineEvent[] => getGuestEventsFromStorage();
 
