@@ -24,13 +24,13 @@ type CategoryConfig = {
 };
 
 const CATEGORY_MAP: Record<string, CategoryConfig> = {
-  meal: { icon: <Utensils className="w-3 h-3" />, label: "Meals", color: "bg-orange-500" },
-  sleep: { icon: <Moon className="w-3 h-3" />, label: "Sleep", color: "bg-indigo-500" },
-  medication: { icon: <Pill className="w-3 h-3" />, label: "Supplements", color: "bg-green-500" },
-  workout: { icon: <Zap className="w-3 h-3" />, label: "Activity", color: "bg-yellow-500" },
-  injury: { icon: <Activity className="w-3 h-3" />, label: "Symptoms", color: "bg-red-500" },
-  mood: { icon: <Brain className="w-3 h-3" />, label: "Mood", color: "bg-purple-500" },
-  doctor_visit: { icon: <StickyNote className="w-3 h-3" />, label: "Notes", color: "bg-blue-500" },
+  meal: { icon: <Utensils className="w-3 h-3" />, label: "Meals", color: "bg-health" },
+  sleep: { icon: <Moon className="w-3 h-3" />, label: "Sleep", color: "bg-health" },
+  medication: { icon: <Pill className="w-3 h-3" />, label: "Supplements", color: "bg-health" },
+  workout: { icon: <Zap className="w-3 h-3" />, label: "Activity", color: "bg-health" },
+  injury: { icon: <Activity className="w-3 h-3" />, label: "Symptoms", color: "bg-destructive" },
+  mood: { icon: <Brain className="w-3 h-3" />, label: "Mood", color: "bg-health" },
+  doctor_visit: { icon: <StickyNote className="w-3 h-3" />, label: "Notes", color: "bg-health" },
 };
 
 // Normalize to local YYYY-MM-DD to avoid timezone shifts
@@ -120,9 +120,9 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
         </h3>
         
         {/* Weekday headers */}
-        <div className="grid grid-cols-7 gap-2 mb-2">
+        <div className="grid grid-cols-7 gap-2 mb-4">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="text-center text-xs font-medium text-muted-foreground py-2">
+            <div key={day} className="text-center text-sm font-medium text-muted-foreground py-2">
               {day}
             </div>
           ))}
@@ -152,17 +152,19 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
                 key={dateKey}
                 onClick={() => handleDayClick(day, dateKey)}
                 className={`
-                  aspect-square rounded-lg flex flex-col items-center justify-center relative
+                  aspect-square rounded-lg flex flex-col items-center justify-start p-4 relative
+                  bg-card-bg border border-card-border
                   transition-all duration-200
-                  ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}
-                  ${hasEvents ? 'hover:bg-accent/50' : 'hover:bg-accent'}
+                  hover:shadow-md hover:scale-105
+                  ${isSelected ? 'shadow-[0_0_0_3px_hsl(var(--health-primary-glow))] animate-soft-pulse' : ''}
+                  ${hasEvents ? 'hover:border-health/30' : ''}
                 `}
               >
-                <span className={`text-sm ${hasEvents ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
+                <span className={`text-base ${hasEvents ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
                   {day.getDate()}
                 </span>
                 
-                {/* Photo thumbnail + Category icon badges */}
+                {/* Photo thumbnail + Category icon chips */}
                 {hasEvents && (() => {
                   // Collect all photos from all events on this day
                   const allPhotos = events.flatMap(e => e.attachment_urls || []);
@@ -170,40 +172,41 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
                   const totalPhotoCount = allPhotos.length;
                   
                   return (
-                    <div className="flex flex-col items-center gap-1 mt-1">
+                    <div className="flex flex-col items-center gap-2 mt-2 w-full">
                       {/* First photo with count badge if photos exist */}
                       {firstPhoto && (
-                        <div className="relative">
+                        <div className="relative group">
                           <img 
                             src={firstPhoto} 
                             alt="Event" 
-                            className="w-8 h-8 rounded object-cover"
+                            className="w-12 h-12 rounded-full object-cover border-2 border-card-border group-hover:border-health/50 transition-all duration-200"
                           />
                           {totalPhotoCount > 1 && (
-                            <span className="absolute -bottom-1 -right-1 bg-black/70 text-white text-[8px] px-1 rounded-full leading-tight">
+                            <span className="absolute -bottom-0.5 -right-0.5 bg-health text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full leading-none">
                               +{totalPhotoCount - 1}
                             </span>
                           )}
                         </div>
                       )}
                       
-                      {/* Category icons */}
-                      <div className="flex gap-0.5">
-                        {categories.slice(0, 3).map((eventType) => {
+                      {/* Category icon chips - monochrome */}
+                      <div className="flex flex-wrap gap-1 justify-center">
+                        {categories.slice(0, 4).map((eventType) => {
                           const config = CATEGORY_MAP[eventType];
                           if (!config) return null;
                           return (
                             <div 
                               key={eventType}
-                              className={`${config.color} rounded-full p-0.5 text-white`}
+                              className="bg-muted/50 rounded-md p-1 text-muted-foreground hover:bg-health/10 hover:text-health transition-all duration-200"
+                              title={config.label}
                             >
                               {config.icon}
                             </div>
                           );
                         })}
-                        {categories.length > 3 && (
-                          <div className="bg-muted rounded-full w-3 h-3 flex items-center justify-center">
-                            <span className="text-[8px] text-muted-foreground">+</span>
+                        {categories.length > 4 && (
+                          <div className="bg-muted/50 rounded-md px-1.5 py-1 flex items-center justify-center">
+                            <span className="text-[10px] font-medium text-muted-foreground">+{categories.length - 4}</span>
                           </div>
                         )}
                       </div>
@@ -220,7 +223,7 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
 
   return (
     <>
-      <div className="overflow-y-auto max-h-[calc(100vh-12rem)] px-4 py-2">
+      <div className="overflow-y-auto max-h-[calc(100vh-12rem)] px-4 py-6">
         {Array.from({ length: monthsToShow }, (_, i) => renderMonth(i))}
       </div>
 

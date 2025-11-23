@@ -39,6 +39,15 @@ All colors MUST be HSL.
     --accent-warm: 45 85% 65%;
     --accent-warm-foreground: 260 30% 20%;
 
+    /* Health Primary - Calm green for health-tech (#6CB792) */
+    --health-primary: 157 45% 57%;
+    --health-primary-foreground: 0 0% 98%;
+    --health-primary-glow: 157 45% 57% / 0.2;
+
+    /* Card styling for calendar */
+    --card-bg: 0 0% 97%;
+    --card-border: 0 0% 91%;
+
     /* Success - Aqua tone */
     --success: 180 75% 60%;
     --success-foreground: 0 0% 98%;
@@ -71,6 +80,7 @@ All colors MUST be HSL.
 
     /* Animations - measured, breathing */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {

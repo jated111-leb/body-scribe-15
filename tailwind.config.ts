@@ -53,6 +53,12 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
+        health: {
+          DEFAULT: "hsl(var(--health-primary))",
+          foreground: "hsl(var(--health-primary-foreground))",
+        },
+        "card-bg": "hsl(var(--card-bg))",
+        "card-border": "hsl(var(--card-border))",
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
@@ -95,10 +101,21 @@ export default {
             height: "0",
           },
         },
+        "soft-pulse": {
+          "0%, 100%": {
+            opacity: "1",
+            transform: "scale(1)",
+          },
+          "50%": {
+            opacity: "0.85",
+            transform: "scale(1.02)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "soft-pulse": "soft-pulse 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
       },
     },
   },
