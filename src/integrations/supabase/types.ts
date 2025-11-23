@@ -193,6 +193,131 @@ export type Database = {
         }
         Relationships: []
       }
+      inferred_patterns: {
+        Row: {
+          confirmation_shown: boolean | null
+          created_at: string | null
+          detection_count: number
+          first_detected: string
+          id: string
+          last_detected: string
+          metadata: Json | null
+          pattern_type: string
+          user_id: string
+          user_response: string | null
+        }
+        Insert: {
+          confirmation_shown?: boolean | null
+          created_at?: string | null
+          detection_count?: number
+          first_detected?: string
+          id?: string
+          last_detected?: string
+          metadata?: Json | null
+          pattern_type: string
+          user_id: string
+          user_response?: string | null
+        }
+        Update: {
+          confirmation_shown?: boolean | null
+          created_at?: string | null
+          detection_count?: number
+          first_detected?: string
+          id?: string
+          last_detected?: string
+          metadata?: Json | null
+          pattern_type?: string
+          user_id?: string
+          user_response?: string | null
+        }
+        Relationships: []
+      }
+      lifestyle_achievements: {
+        Row: {
+          achievement_type: string
+          confidence: number | null
+          created_at: string | null
+          date_triggered: string
+          focus_id: string | null
+          id: string
+          insight_text: string
+          metadata: Json | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          achievement_type: string
+          confidence?: number | null
+          created_at?: string | null
+          date_triggered?: string
+          focus_id?: string | null
+          id?: string
+          insight_text: string
+          metadata?: Json | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          achievement_type?: string
+          confidence?: number | null
+          created_at?: string | null
+          date_triggered?: string
+          focus_id?: string | null
+          id?: string
+          insight_text?: string
+          metadata?: Json | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lifestyle_achievements_focus_id_fkey"
+            columns: ["focus_id"]
+            isOneToOne: false
+            referencedRelation: "lifestyle_focus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lifestyle_focus: {
+        Row: {
+          confidence: number | null
+          created_at: string | null
+          focus_type: string
+          id: string
+          insight_reference: string | null
+          last_detected: string | null
+          start_date: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string | null
+          focus_type: string
+          id?: string
+          insight_reference?: string | null
+          last_detected?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string | null
+          focus_type?: string
+          id?: string
+          insight_reference?: string | null
+          last_detected?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null
