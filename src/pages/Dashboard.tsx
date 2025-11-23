@@ -36,7 +36,6 @@ const Dashboard = () => {
   useEffect(() => {
     if (user) {
       loadProfile();
-      updateAchievementsForUser(user.id);
     }
   }, [user]);
 
