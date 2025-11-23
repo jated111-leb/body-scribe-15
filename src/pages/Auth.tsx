@@ -65,10 +65,9 @@ const Auth = () => {
     } else {
       toast({
         title: "Account created!",
-        description: "Please select your role to continue.",
+        description: "Welcome to Life Tracker.",
       });
-      // Redirect to role selection after successful signup
-      navigate("/role-selection");
+      navigate("/", { replace: true });
     }
   };
 
