@@ -19,9 +19,10 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Don't redirect from the auth page itself, let Index handle it
+    // If user is already logged in, redirect to homepage
+    // Index page will handle the dashboard routing
     if (user) {
-      navigate("/");
+      navigate("/", { replace: true });
     }
   }, [user, navigate]);
 
@@ -44,7 +45,7 @@ const Auth = () => {
         description: "You've successfully signed in.",
       });
       // Navigation will be handled by the Index page based on role
-      navigate("/");
+      navigate("/", { replace: true });
     }
   };
 

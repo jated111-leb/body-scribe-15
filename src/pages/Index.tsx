@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { role, loading } = useUserRole();
   const [roleSelected, setRoleSelected] = useState<boolean | null>(null);
 
@@ -30,9 +30,9 @@ const Index = () => {
   }, [user]);
 
   useEffect(() => {
-    if (!loading && user && roleSelected !== null) {
-      // Only redirect to role-selection if user hasn't selected a role yet
-      if (!role && !roleSelected) {
+    if (user && !loading) {
+      if (roleSelected === false || (!role && roleSelected !== null)) {
+        // User hasn't selected a role yet
         navigate("/role-selection");
       } else if (role === "dietician") {
         navigate("/dietician-dashboard");
@@ -42,7 +42,8 @@ const Index = () => {
     }
   }, [user, role, loading, roleSelected, navigate]);
 
-  if (loading || roleSelected === null) {
+  // Show loading while checking auth status
+  if (user && (loading || roleSelected === null)) {
     return (
       <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
@@ -50,8 +51,47 @@ const Index = () => {
     );
   }
 
+  const handleSignOut = async () => {
+    await signOut();
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-subtle">
+      {/* Navigation Header */}
+      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+            Aura
+          </h1>
+          <div className="flex gap-3">
+            {!user ? (
+              <>
+                <Button 
+                  variant="ghost"
+                  onClick={() => navigate('/auth')}
+                >
+                  Sign In
+                </Button>
+                <Button 
+                  onClick={() => navigate('/auth')}
+                  className="bg-gradient-primary"
+                >
+                  Sign Up
+                </Button>
+              </>
+            ) : (
+              <Button 
+                variant="outline"
+                onClick={handleSignOut}
+              >
+                Sign Out
+              </Button>
+            )}
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div 
@@ -75,16 +115,30 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="bg-gradient-primary hover:opacity-90 shadow-glow"
-                onClick={() => navigate('/auth')}
+                onClick={() => {
+                  if (user) {
+                    // User is logged in, go directly to dashboard
+                    navigate(role === "dietician" ? "/dietician-dashboard" : "/dashboard");
+                  } else {
+                    // Not logged in, go to auth
+                    navigate('/auth');
+                  }
+                }}
               >
-                Explore Aura <ArrowRight className="ml-2 h-5 w-5" />
+                {user ? "Go to Dashboard" : "Explore Aura"} <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Button 
                 size="lg" 
                 variant="outline"
-                onClick={() => navigate('/auth')}
+                onClick={() => {
+                  if (user) {
+                    handleSignOut();
+                  } else {
+                    navigate('/auth');
+                  }
+                }}
               >
-                For Professionals
+                {user ? "Sign Out" : "For Professionals"}
               </Button>
             </div>
           </div>
@@ -138,9 +192,15 @@ const Index = () => {
             <Button 
               size="lg" 
               className="bg-gradient-primary hover:opacity-90 shadow-glow"
-              onClick={() => navigate('/auth')}
+              onClick={() => {
+                if (user) {
+                  navigate(role === "dietician" ? "/dietician-dashboard" : "/dashboard");
+                } else {
+                  navigate('/auth');
+                }
+              }}
             >
-              Start with Aura <ArrowRight className="ml-2 h-5 w-5" />
+              {user ? "Go to Dashboard" : "Start with Aura"} <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
         </div>
