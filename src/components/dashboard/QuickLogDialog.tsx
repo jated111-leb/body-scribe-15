@@ -40,10 +40,11 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
   const { user } = useAuth();
 
   // Form state for different entry types
-  const [mealData, setMealData] = useState({ items: "", time: "", type: "" });
+  const [mealData, setMealData] = useState({ items: "", time: "", type: "", sugarLevel: "" });
   const [workoutData, setWorkoutData] = useState({ type: "", duration: "", intensity: "" });
   const [medicationData, setMedicationData] = useState({ name: "", dose: "", time: "" });
   const [symptomData, setSymptomData] = useState({ name: "", severity: "", notes: "" });
+  const [momentData, setMomentData] = useState({ type: "" });
 
   const handleSave = async () => {
     if (!user) {
@@ -82,7 +83,10 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
             title: mealTypeDisplay,
             description: mealData.items,
             meal_type: normalizeMealType(mealData.type || 'snack'),
-            structured_data: { time: mealData.time },
+            structured_data: { 
+              time: mealData.time,
+              sugar_level: mealData.sugarLevel || undefined,
+            },
           };
           break;
         case "workout":
@@ -117,6 +121,41 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
             severity: symptomData.severity || 'moderate',
             description: symptomData.notes,
             structured_data: { symptom_type: symptomType },
+          };
+          break;
+        case "moment":
+          if (!momentData.type) {
+            toast({
+              title: "Select a moment type",
+              description: "Please choose what you'd like to log.",
+              variant: "destructive",
+            });
+            setLoading(false);
+            return;
+          }
+          
+          const momentTitles: Record<string, string> = {
+            coffee: "☕ Coffee",
+            tea: "🧋 Tea",
+            energy_drink: "🧃 Energy Drink",
+            caffeine_skip: "🚫 Skipped Caffeine",
+            alcohol_free: "🍷🚫 Alcohol-free Day",
+          };
+          
+          const momentInsights: Record<string, string> = {
+            coffee: "Coffee moment logged — Aura will observe how this relates to your rhythm.",
+            tea: "Tea logged — we'll watch how this choice affects your patterns.",
+            energy_drink: "Energy drink noted — observing its role in your day.",
+            caffeine_skip: "Caffeine skip logged — interesting to see how today unfolds.",
+            alcohol_free: "Alcohol-free day noted — Aura will observe how this affects your sleep rhythm.",
+          };
+          
+          eventData = {
+            ...eventData,
+            event_type: "moment",
+            title: momentTitles[momentData.type] || "Moment",
+            description: momentInsights[momentData.type],
+            structured_data: { moment_type: momentData.type },
           };
           break;
       }
@@ -160,10 +199,11 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
       // Reset all form states
       setFreeText("");
       setImageUrls([]);
-      setMealData({ items: "", time: "", type: "" });
+      setMealData({ items: "", time: "", type: "", sugarLevel: "" });
       setWorkoutData({ type: "", duration: "", intensity: "" });
       setMedicationData({ name: "", dose: "", time: "" });
       setSymptomData({ name: "", severity: "", notes: "" });
+      setMomentData({ type: "" });
       onOpenChange(false);
     } catch (error: any) {
       console.error('Error logging entry:', error);
@@ -188,8 +228,11 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
         </DialogHeader>
 
         <Tabs defaultValue="freetext" className="mt-4" onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="freetext">Free Text</TabsTrigger>
+            <TabsTrigger value="moment" title="Moments">
+              <span className="text-base">☕</span>
+            </TabsTrigger>
             <TabsTrigger value="meal">
               <Utensils className="h-4 w-4" />
             </TabsTrigger>
@@ -225,6 +268,10 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
                 <ImageUpload onImagesChange={setImageUrls} maxImages={5} />
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="moment" className="space-y-4">
+            <MomentForm data={momentData} onChange={setMomentData} />
           </TabsContent>
 
           <TabsContent value="meal" className="space-y-4">
@@ -281,6 +328,43 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
   );
 };
 
+const MomentForm = ({ data, onChange }: { data: any; onChange: (data: any) => void }) => (
+  <div className="space-y-4">
+    <div>
+      <Label>Moment Type</Label>
+      <p className="text-xs text-muted-foreground mb-3">
+        Quick micro-logs that help Aura observe your rhythm
+      </p>
+      <div className="grid grid-cols-1 gap-2">
+        {[
+          { value: "coffee", label: "☕ Coffee", desc: "Regular coffee moment" },
+          { value: "tea", label: "🧋 Tea", desc: "Tea instead of coffee" },
+          { value: "energy_drink", label: "🧃 Energy Drink", desc: "Energy drink consumed" },
+          { value: "caffeine_skip", label: "🚫 Skipped Caffeine", desc: "Intentionally caffeine-free today" },
+          { value: "alcohol_free", label: "🍷🚫 Alcohol-free Day", desc: "Choosing no alcohol today" },
+        ].map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => onChange({ ...data, type: option.value })}
+            className={`p-3 text-left rounded-lg border-2 transition-all ${
+              data.type === option.value
+                ? "border-[#6CB792] bg-[#6CB792]/5"
+                : "border-border hover:border-[#6CB792]/50"
+            }`}
+          >
+            <div className="font-medium text-sm">{option.label}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">{option.desc}</div>
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground mt-3 italic">
+        These small choices help Aura understand your patterns without heavy tracking.
+      </p>
+    </div>
+  </div>
+);
+
 const MealForm = ({ data, onChange }: { data: any; onChange: (data: any) => void }) => (
   <div className="space-y-4">
     <div>
@@ -319,6 +403,23 @@ const MealForm = ({ data, onChange }: { data: any; onChange: (data: any) => void
           ))}
         </select>
       </div>
+    </div>
+    <div>
+      <Label htmlFor="sugar-level">Sugar Level (Optional)</Label>
+      <select
+        id="sugar-level"
+        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        value={data.sugarLevel}
+        onChange={(e) => onChange({ ...data, sugarLevel: e.target.value })}
+      >
+        <option value="">Not specified</option>
+        <option value="low">Low Sugar</option>
+        <option value="medium">Medium Sugar</option>
+        <option value="high">High Sugar</option>
+      </select>
+      <p className="text-xs text-muted-foreground mt-1.5">
+        Your perception — helps Aura understand how meals influence your rhythm
+      </p>
     </div>
   </div>
 );
