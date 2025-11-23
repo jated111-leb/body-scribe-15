@@ -232,16 +232,16 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
                     {/* Category header with first photo + badge */}
                     <div className="flex items-center gap-3 mb-3">
                       {firstPhoto && (
-                        <div className="relative">
+                        <div className="flex items-center gap-2">
                           <img 
                             src={firstPhoto} 
                             alt={config.label}
                             className="w-16 h-16 rounded-lg object-cover"
                           />
                           {photoCount > 1 && (
-                            <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
+                            <span className="text-sm font-semibold text-muted-foreground">
                               +{photoCount - 1}
-                            </div>
+                            </span>
                           )}
                         </div>
                       )}
