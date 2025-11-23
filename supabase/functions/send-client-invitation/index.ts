@@ -75,8 +75,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Invitation created:", invitation.id);
 
-    // Create invitation link
-    const invitationUrl = `${Deno.env.get("SUPABASE_URL")?.replace("/rest/v1", "")}/invite?token=${invitation.invitation_token}`;
+    // Create invitation link using the frontend origin
+    const origin = req.headers.get("origin") || req.headers.get("referer")?.split("/").slice(0, 3).join("/") || "https://your-app-domain.com";
+    const invitationUrl = `${origin}/invite?token=${invitation.invitation_token}`;
 
     // Send email
     const emailResponse = await resend.emails.send({
