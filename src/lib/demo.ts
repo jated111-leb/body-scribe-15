@@ -11,6 +11,9 @@ export type TimelineEvent = {
   severity?: string | null;
   activity_type?: string | null;
   duration?: number | null;
+  attachment_urls?: string[] | null;
+  created_at?: string | null;
+  meal_type?: string | null;
 };
 
 // Get guest events from localStorage or defaults
