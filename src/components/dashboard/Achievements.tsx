@@ -105,7 +105,7 @@ export function Achievements({ userId }: { userId: string }) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Start tracking your health activities to unlock achievements and build streaks!
+            No achievements yet. Your journey starts here.
           </p>
         </CardContent>
       </Card>
