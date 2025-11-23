@@ -162,28 +162,54 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
                   {day.getDate()}
                 </span>
                 
-                {/* Category icon badges */}
-                {hasEvents && (
-                  <div className="flex gap-0.5 mt-1">
-                    {categories.slice(0, 3).map((eventType) => {
-                      const config = CATEGORY_MAP[eventType];
-                      if (!config) return null;
-                      return (
-                        <div 
-                          key={eventType}
-                          className={`${config.color} rounded-full p-0.5 text-white`}
-                        >
-                          {config.icon}
+                {/* Photo thumbnail + Category icon badges */}
+                {hasEvents && (() => {
+                  // Collect all photos from all events on this day
+                  const allPhotos = events.flatMap(e => e.attachment_urls || []);
+                  const firstPhoto = allPhotos[0];
+                  const totalPhotoCount = allPhotos.length;
+                  
+                  return (
+                    <div className="flex flex-col items-center gap-1 mt-1">
+                      {/* First photo with count badge if photos exist */}
+                      {firstPhoto && (
+                        <div className="relative">
+                          <img 
+                            src={firstPhoto} 
+                            alt="Event" 
+                            className="w-8 h-8 rounded object-cover"
+                          />
+                          {totalPhotoCount > 1 && (
+                            <span className="absolute -bottom-1 -right-1 bg-black/70 text-white text-[8px] px-1 rounded-full leading-tight">
+                              +{totalPhotoCount - 1}
+                            </span>
+                          )}
                         </div>
-                      );
-                    })}
-                    {categories.length > 3 && (
-                      <div className="bg-muted rounded-full w-3 h-3 flex items-center justify-center">
-                        <span className="text-[8px] text-muted-foreground">+</span>
+                      )}
+                      
+                      {/* Category icons */}
+                      <div className="flex gap-0.5">
+                        {categories.slice(0, 3).map((eventType) => {
+                          const config = CATEGORY_MAP[eventType];
+                          if (!config) return null;
+                          return (
+                            <div 
+                              key={eventType}
+                              className={`${config.color} rounded-full p-0.5 text-white`}
+                            >
+                              {config.icon}
+                            </div>
+                          );
+                        })}
+                        {categories.length > 3 && (
+                          <div className="bg-muted rounded-full w-3 h-3 flex items-center justify-center">
+                            <span className="text-[8px] text-muted-foreground">+</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  );
+                })()}
               </button>
             );
           })}
