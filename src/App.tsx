@@ -14,6 +14,7 @@ import DieticianDashboard from "./pages/DieticianDashboard";
 import ClientProfile from "./pages/ClientProfile";
 import AcceptInvitation from "./pages/AcceptInvitation";
 import Settings from "./pages/Settings";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/dietician-dashboard" element={<DieticianDashboard />} />
             <Route path="/client/:clientId" element={<ClientProfile />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
