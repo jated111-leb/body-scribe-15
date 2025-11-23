@@ -16,34 +16,43 @@ export type Database = {
     Tables: {
       achievements: {
         Row: {
+          category: string | null
           created_at: string | null
           current_streak: number | null
           id: string
+          insight_text: string | null
           last_event_date: string | null
           metadata: Json | null
           start_date: string
+          status: string | null
           type: string
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          category?: string | null
           created_at?: string | null
           current_streak?: number | null
           id?: string
+          insight_text?: string | null
           last_event_date?: string | null
           metadata?: Json | null
           start_date: string
+          status?: string | null
           type: string
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          category?: string | null
           created_at?: string | null
           current_streak?: number | null
           id?: string
+          insight_text?: string | null
           last_event_date?: string | null
           metadata?: Json | null
           start_date?: string
+          status?: string | null
           type?: string
           updated_at?: string | null
           user_id?: string
