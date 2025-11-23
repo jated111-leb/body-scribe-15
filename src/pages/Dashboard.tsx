@@ -6,9 +6,10 @@ import { TimelineFeed } from "@/components/dashboard/TimelineFeed";
 import { ProfileSummary } from "@/components/dashboard/ProfileSummary";
 import { WeeklySummary } from "@/components/dashboard/WeeklySummary";
 import { Achievements } from "@/components/dashboard/Achievements";
+import { EmergingPatterns } from "@/components/dashboard/EmergingPatterns";
+import { ContextualPrompts } from "@/components/dashboard/ContextualPrompts";
 import { QuickLogDialog } from "@/components/dashboard/QuickLogDialog";
 import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
-import { updateAchievementsForUser } from "@/lib/achievements";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Settings, Calendar, List } from "lucide-react";
@@ -16,6 +17,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useAchievementNotifications } from "@/hooks/useAchievementNotifications";
+import { initializeUserPreferences } from "@/lib/initializeUserPreferences";
 
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -25,6 +28,9 @@ const Dashboard = () => {
   const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Listen for achievement notifications
+  useAchievementNotifications(user?.id);
 
   // Redirect dieticians to their specialized dashboard
   useEffect(() => {
@@ -41,6 +47,9 @@ const Dashboard = () => {
 
   const loadProfile = async () => {
     if (!user) return;
+    
+    // Initialize user preferences if first time
+    await initializeUserPreferences(user.id);
     
     const { data, error } = await supabase
       .from("profiles")
@@ -108,6 +117,12 @@ const Dashboard = () => {
 
           {/* Weekly Summary */}
           <WeeklySummary />
+
+          {/* Contextual Prompts */}
+          {user && <ContextualPrompts userId={user.id} />}
+
+          {/* Emerging Patterns */}
+          {user && <EmergingPatterns userId={user.id} />}
 
           {/* Achievements */}
           {user && <Achievements userId={user.id} />}

@@ -14,6 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievement_notifications: {
+        Row: {
+          achievement_id: string | null
+          created_at: string | null
+          id: string
+          message: string
+          notification_type: string
+          read: boolean | null
+          user_id: string
+        }
+        Insert: {
+          achievement_id?: string | null
+          created_at?: string | null
+          id?: string
+          message: string
+          notification_type: string
+          read?: boolean | null
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          notification_type?: string
+          read?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievement_notifications_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      achievement_progress: {
+        Row: {
+          category: string
+          created_at: string | null
+          current_count: number
+          id: string
+          last_updated: string | null
+          progress_message: string
+          required_count: number
+          type: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          current_count?: number
+          id?: string
+          last_updated?: string | null
+          progress_message: string
+          required_count: number
+          type: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          current_count?: number
+          id?: string
+          last_updated?: string | null
+          progress_message?: string
+          required_count?: number
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       achievements: {
         Row: {
           category: string | null
@@ -294,6 +368,36 @@ export type Database = {
           severity?: string | null
           structured_data?: Json | null
           title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_achievement_preferences: {
+        Row: {
+          created_at: string | null
+          id: string
+          notification_frequency: string | null
+          notifications_enabled: boolean | null
+          progressive_complexity: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          notification_frequency?: string | null
+          notifications_enabled?: boolean | null
+          progressive_complexity?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          notification_frequency?: string | null
+          notifications_enabled?: boolean | null
+          progressive_complexity?: number | null
           updated_at?: string | null
           user_id?: string
         }
