@@ -18,7 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [loading, setLoading] = useState(true);
 
   const [profile, setProfile] = useState({
@@ -1002,14 +1002,26 @@ const Settings = () => {
         </Card>
 
         {/* Save Button */}
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => navigate("/dashboard")}>
-            Cancel
+        <div className="flex justify-between items-center">
+          <Button 
+            variant="destructive" 
+            onClick={async () => {
+              await signOut();
+              toast({ title: "Signed out successfully" });
+              navigate("/");
+            }}
+          >
+            Sign Out
           </Button>
-          <Button onClick={handleSave} className="bg-gradient-primary">
-            <Save className="mr-2 h-4 w-4" />
-            Save Changes
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/dashboard")}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} className="bg-gradient-primary">
+              <Save className="mr-2 h-4 w-4" />
+              Save Changes
+            </Button>
+          </div>
         </div>
       </div>
     </div>
