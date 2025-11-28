@@ -69,7 +69,24 @@ const Auth = () => {
         title: "Account created!",
         description: "Welcome to Life Tracker.",
       });
-      navigate("/", { replace: true });
+      
+      // Check if role is selected to determine where to navigate
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role_selected")
+          .eq("id", currentUser.id)
+          .maybeSingle();
+        
+        if (!profile?.role_selected) {
+          navigate("/role-selection", { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
+      } else {
+        navigate("/", { replace: true });
+      }
     }
   };
 
