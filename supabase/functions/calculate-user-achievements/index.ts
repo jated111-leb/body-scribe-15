@@ -83,26 +83,70 @@ serve(async (req) => {
           preferences?.progressive_complexity || 1
         );
 
-        // Create notifications for new achievements
+        // Insert achievements and create notifications
         for (const achievement of newAchievements) {
-          await supabase.from("achievement_notifications").insert({
-            user_id: userId,
-            achievement_id: achievement.id,
-            notification_type: "unlock",
-            message: achievement.insight_text,
-          });
+          const { data: insertedAchievement, error: insertError } = await supabase
+            .from("achievements")
+            .insert({
+              user_id: achievement.user_id,
+              type: achievement.type,
+              category: achievement.category,
+              start_date: achievement.start_date,
+              current_streak: achievement.current_streak,
+              last_event_date: achievement.last_event_date,
+              insight_text: achievement.insight_text,
+              status: achievement.status || "active",
+              metadata: {},
+            })
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error("Error inserting achievement:", insertError);
+            continue;
+          }
+
+          if (insertedAchievement) {
+            await supabase.from("achievement_notifications").insert({
+              user_id: userId,
+              achievement_id: insertedAchievement.id,
+              notification_type: "unlock",
+              message: achievement.insight_text,
+            });
+          }
         }
 
-        // Calculate lifestyle achievements
+        // Calculate and insert lifestyle achievements
         const lifestyleAchievements = await calculateLifestyleAchievements(userId, events as TimelineEvent[]);
         
-        // Create notifications for lifestyle achievements
         for (const lifestyle of lifestyleAchievements) {
-          await supabase.from("achievement_notifications").insert({
-            user_id: userId,
-            notification_type: "unlock",
-            message: lifestyle.insight_text,
-          });
+          const { data: insertedLifestyle, error: insertError } = await supabase
+            .from("lifestyle_achievements")
+            .insert({
+              user_id: lifestyle.user_id,
+              focus_id: lifestyle.focus_id,
+              achievement_type: lifestyle.achievement_type,
+              title: lifestyle.title,
+              insight_text: lifestyle.insight_text,
+              confidence: lifestyle.confidence || 0.5,
+              metadata: {},
+            })
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error("Error inserting lifestyle achievement:", insertError);
+            continue;
+          }
+
+          if (insertedLifestyle) {
+            await supabase.from("achievement_notifications").insert({
+              user_id: userId,
+              achievement_id: insertedLifestyle.id,
+              notification_type: "lifestyle_shift",
+              message: lifestyle.insight_text,
+            });
+          }
         }
 
         results.push({ 

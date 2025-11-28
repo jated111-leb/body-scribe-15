@@ -19,12 +19,29 @@ const RoleSelection = () => {
 
     setLoading(true);
     try {
-      // Insert the user role
-      const { error: roleError } = await supabase
+      // Check if user already has a role
+      const { data: existingRole } = await supabase
         .from("user_roles")
-        .insert({ user_id: user.id, role: selectedRole });
+        .select("id, role")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-      if (roleError) throw roleError;
+      if (existingRole) {
+        // Update existing role
+        const { error: updateError } = await supabase
+          .from("user_roles")
+          .update({ role: selectedRole })
+          .eq("id", existingRole.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Insert new role
+        const { error: insertError } = await supabase
+          .from("user_roles")
+          .insert({ user_id: user.id, role: selectedRole });
+
+        if (insertError) throw insertError;
+      }
 
       // Update profile to mark role as selected
       const { error: profileError } = await supabase

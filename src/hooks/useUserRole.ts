@@ -18,22 +18,30 @@ export const useUserRole = () => {
       }
 
       try {
-        const { data, error } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .single();
+        // Check for roles in order of precedence: admin > dietician > client
+        const roleHierarchy: UserRole[] = ['admin', 'dietician', 'client'];
+        let foundRole: UserRole | null = null;
 
-        if (error) {
-          if (error.code === 'PGRST116') {
-            // No role found
-            setRole(null);
-          } else {
-            throw error;
+        for (const checkRole of roleHierarchy) {
+          const { data, error } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", user.id)
+            .eq("role", checkRole)
+            .maybeSingle();
+
+          if (error) {
+            console.error(`Error checking role ${checkRole}:`, error);
+            continue;
           }
-        } else {
-          setRole(data.role as UserRole);
+
+          if (data) {
+            foundRole = data.role as UserRole;
+            break;
+          }
         }
+
+        setRole(foundRole);
       } catch (error) {
         console.error("Error fetching user role:", error);
         setRole(null);

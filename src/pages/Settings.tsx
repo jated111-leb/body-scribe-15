@@ -134,12 +134,12 @@ const Settings = () => {
             height: profileData.height?.toString() || "",
             weight: profileData.weight?.toString() || "",
           });
-          setHealth({
-            conditions: profileData.health_conditions?.join(', ') || "",
-            medications: "",
-            supplements: profileData.medications?.join('\n') || "",
-            allergies: profileData.allergies?.join(', ') || "",
-          });
+    setHealth({
+      conditions: profileData.health_conditions?.join(', ') || "",
+      medications: profileData.medications?.join('\n') || "",
+      supplements: "",
+      allergies: profileData.allergies?.join(', ') || "",
+    });
           setGoals(profileData.goals?.join('\n') || "");
         }
 
@@ -351,9 +351,9 @@ const Settings = () => {
         weight: profile.weight ? parseFloat(profile.weight) : null,
         bmr: bmr,
         health_conditions: health.conditions ? health.conditions.split(',').map(s => s.trim()).filter(Boolean) : [],
-        medications: health.supplements ? health.supplements.split('\n').filter(Boolean) : [],
+        medications: health.medications ? health.medications.split('\n').map(s => s.trim()).filter(Boolean) : [],
         allergies: health.allergies ? health.allergies.split(',').map(s => s.trim()).filter(Boolean) : [],
-        goals: goals ? goals.split('\n').filter(Boolean) : [],
+        goals: goals ? goals.split('\n').map(s => s.trim()).filter(Boolean) : [],
       };
 
       const { error: profileError } = await supabase

@@ -95,44 +95,27 @@ const AcceptInvitation = () => {
 
       if (signUpError) throw signUpError;
 
-      // Wait a bit for the user to be created and profile to be set up
+      // Wait a bit for the user to be created
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Get the newly created user
-      const { data: { user: newUser } } = await supabase.auth.getUser();
+      const { data: { user: newUser }, error: userError } = await supabase.auth.getUser();
       
-      if (!newUser) {
-        throw new Error("User creation failed");
-      }
+      if (userError || !newUser) throw new Error("User creation failed");
 
-      // Assign client role
-      const { error: roleError } = await supabase
-        .from("user_roles")
-        .insert({ user_id: newUser.id, role: "client" });
+      // Call edge function to complete invitation acceptance
+      const { data, error: acceptError } = await supabase.functions.invoke(
+        "accept-invitation",
+        {
+          body: {
+            invitationToken: token,
+            userId: newUser.id,
+          },
+        }
+      );
 
-      if (roleError) throw roleError;
-
-      // Create dietician-client relationship
-      const { error: relationError } = await supabase
-        .from("dietician_clients")
-        .insert({
-          dietician_id: invitation.dietician_id,
-          client_id: newUser.id,
-          status: "active",
-        });
-
-      if (relationError) throw relationError;
-
-      // Update invitation status
-      const { error: updateError } = await supabase
-        .from("client_invitations")
-        .update({
-          status: "accepted",
-          accepted_at: new Date().toISOString(),
-        })
-        .eq("id", invitation.id);
-
-      if (updateError) throw updateError;
+      if (acceptError) throw acceptError;
+      if (!data?.success) throw new Error("Failed to accept invitation");
 
       toast({
         title: "Welcome to Life Tracker!",

@@ -22,6 +22,15 @@ export const ImageUpload = ({ onImagesChange, maxImages = 5 }: ImageUploadProps)
     
     if (files.length === 0) return;
 
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to upload images",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (images.length + files.length > maxImages) {
       toast({
         title: "Too many images",
@@ -62,7 +71,7 @@ export const ImageUpload = ({ onImagesChange, maxImages = 5 }: ImageUploadProps)
       const uploadPromises = validFiles.map(async (file) => {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `${user!.id}/${fileName}`;
+        const filePath = `${user.id}/${fileName}`;
 
         const { error: uploadError, data } = await supabase.storage
           .from('health-images')

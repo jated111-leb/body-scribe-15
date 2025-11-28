@@ -1,6 +1,9 @@
 project_id = "vmuytzlhapllajxjdoph"
 
 [functions.health-chat]
+verify_jwt = true
+
+[functions.accept-invitation]
 verify_jwt = false
 
 [functions.send-client-invitation]

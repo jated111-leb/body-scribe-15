@@ -96,17 +96,17 @@ const Onboarding = () => {
     } else {
       // Complete onboarding
       if (user) {
-        await supabase.from("profiles").update({
-          full_name: profile.name,
-          age: parseInt(profile.age),
-          sex: profile.sex,
-          height: parseFloat(profile.height),
-          weight: parseFloat(profile.weight),
-          health_conditions: health.conditions ? health.conditions.split(",").map(c => c.trim()) : [],
-          medications: health.medications ? health.medications.split(",").map(m => m.trim()) : [],
-          allergies: health.allergies ? health.allergies.split(",").map(a => a.trim()) : [],
-          goals: goals ? goals.split(",").map(g => g.trim()) : [],
-        }).eq("id", user.id);
+      await supabase.from("profiles").update({
+        full_name: profile.name,
+        age: profile.age ? parseInt(profile.age) : null,
+        sex: profile.sex,
+        height: profile.height ? parseFloat(profile.height) : null,
+        weight: profile.weight ? parseFloat(profile.weight) : null,
+        health_conditions: health.conditions ? health.conditions.split(",").map(c => c.trim()).filter(Boolean) : [],
+        medications: health.medications ? health.medications.split(",").map(m => m.trim()).filter(Boolean) : [],
+        allergies: health.allergies ? health.allergies.split(",").map(a => a.trim()).filter(Boolean) : [],
+        goals: goals ? goals.split(",").map(g => g.trim()).filter(Boolean) : [],
+      }).eq("id", user.id);
       }
       toast({
         title: "Welcome to Life Tracker!",
