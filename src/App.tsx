@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { FloatingChat } from "@/components/FloatingChat";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -30,13 +31,37 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/invite" element={<AcceptInvitation />} />
-            <Route path="/role-selection" element={<RoleSelection />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dietician-dashboard" element={<DieticianDashboard />} />
-            <Route path="/client/:clientId" element={<ClientProfile />} />
-            <Route path="/settings" element={<Settings />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/role-selection" element={
+              <ProtectedRoute requireAuth={true}>
+                <RoleSelection />
+              </ProtectedRoute>
+            } />
+            <Route path="/onboarding" element={
+              <ProtectedRoute requireAuth={true}>
+                <Onboarding />
+              </ProtectedRoute>
+            } />
+            <Route path="/dashboard" element={
+              <ProtectedRoute requireRole="client">
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/dietician-dashboard" element={
+              <ProtectedRoute requireRole="dietician">
+                <DieticianDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/client/:clientId" element={
+              <ProtectedRoute requireRole="dietician">
+                <ClientProfile />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute requireAuth={true}>
+                <Settings />
+              </ProtectedRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
