@@ -49,6 +49,25 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
 
+    // Verify caller has dietician role
+    const { data: roleData, error: roleError } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "dietician")
+      .single();
+
+    if (roleError || !roleData) {
+      console.error("Role verification failed:", roleError);
+      return new Response(
+        JSON.stringify({ error: "Only dieticians can send invitations" }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const { clientEmail, dieticianName }: InvitationRequest = await req.json();
 
     // Validate email
