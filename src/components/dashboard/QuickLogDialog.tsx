@@ -31,6 +31,35 @@ interface QuickLogDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface MealFormData {
+  items: string;
+  time: string;
+  type: string;
+  sugarLevel: string;
+}
+
+interface WorkoutFormData {
+  type: string;
+  duration: string;
+  intensity: string;
+}
+
+interface MedicationFormData {
+  name: string;
+  dose: string;
+  time: string;
+}
+
+interface SymptomFormData {
+  name: string;
+  severity: string;
+  notes: string;
+}
+
+interface MomentFormData {
+  type: string;
+}
+
 export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
   const [activeTab, setActiveTab] = useState("freetext");
   const [freeText, setFreeText] = useState("");
@@ -39,12 +68,12 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Form state for different entry types
-  const [mealData, setMealData] = useState({ items: "", time: "", type: "", sugarLevel: "" });
-  const [workoutData, setWorkoutData] = useState({ type: "", duration: "", intensity: "" });
-  const [medicationData, setMedicationData] = useState({ name: "", dose: "", time: "" });
-  const [symptomData, setSymptomData] = useState({ name: "", severity: "", notes: "" });
-  const [momentData, setMomentData] = useState({ type: "" });
+  // Form state for different entry types with proper types
+  const [mealData, setMealData] = useState<MealFormData>({ items: "", time: "", type: "", sugarLevel: "" });
+  const [workoutData, setWorkoutData] = useState<WorkoutFormData>({ type: "", duration: "", intensity: "" });
+  const [medicationData, setMedicationData] = useState<MedicationFormData>({ name: "", dose: "", time: "" });
+  const [symptomData, setSymptomData] = useState<SymptomFormData>({ name: "", severity: "", notes: "" });
+  const [momentData, setMomentData] = useState<MomentFormData>({ type: "" });
 
   const handleSave = async () => {
     if (!user) {
@@ -164,46 +193,51 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
 
       if (error) throw error;
 
-      console.log('✅ Event saved, calculating achievements...');
+      // Show immediate success feedback
+      toast({
+        title: "Entry logged",
+        description: "Your health rhythm continues to take shape.",
+      });
 
-      // Update achievements and get notifications
-      const { newAchievements, progressUpdates } = await updateAchievementsEnhanced(user.id);
-      console.log('📊 Achievement calculation complete:', { 
-        newAchievements: newAchievements.length, 
-        progressUpdates: progressUpdates.length 
+      // Calculate achievements in background (don't block UI or fail the save)
+      Promise.all([
+        updateAchievementsEnhanced(user.id),
+        calculateLifestyleAchievements(user.id)
+      ]).then(([achievementResult, lifestyleAchievements]) => {
+        const { newAchievements, progressUpdates } = achievementResult;
+        
+        console.log('📊 Achievement calculation complete:', { 
+          newAchievements: newAchievements.length, 
+          progressUpdates: progressUpdates.length,
+          lifestyleAchievements: lifestyleAchievements.length 
+        });
+
+        // Show smart notification based on priority (only if we got results)
+        if (lifestyleAchievements.length > 0) {
+          const lifestyle = lifestyleAchievements[0];
+          toast({
+            title: lifestyle.title,
+            description: lifestyle.insight_text,
+          });
+        } else if (newAchievements.length > 0) {
+          const achievement = newAchievements[0];
+          toast({
+            title: "🌱 New Pattern Detected",
+            description: achievement.insight_text,
+          });
+        } else if (progressUpdates.length > 0) {
+          const progress = progressUpdates[0];
+          toast({
+            title: "💫 Almost There",
+            description: progress.progress_message,
+          });
+        }
+      }).catch((achievementError) => {
+        console.error('Achievement calculation failed (non-blocking):', achievementError);
+        // Don't show error to user - the save was successful
       });
       
-      // Calculate lifestyle achievements
-      const lifestyleAchievements = await calculateLifestyleAchievements(user.id);
-      console.log('🌱 Lifestyle achievements calculated:', lifestyleAchievements.length);
-
-      // Show smart notification based on priority
-      if (lifestyleAchievements.length > 0) {
-        const lifestyle = lifestyleAchievements[0];
-        toast({
-          title: lifestyle.title,
-          description: lifestyle.insight_text,
-        });
-      } else if (newAchievements.length > 0) {
-        const achievement = newAchievements[0];
-        toast({
-          title: "🌱 New Pattern Detected",
-          description: achievement.insight_text,
-        });
-      } else if (progressUpdates.length > 0) {
-        const progress = progressUpdates[0];
-        toast({
-          title: "💫 Almost There",
-          description: progress.progress_message,
-        });
-      } else {
-        toast({
-          title: "Entry logged",
-          description: "Your health rhythm continues to take shape.",
-        });
-      }
-      
-      // Reset all form states
+      // Reset all form states immediately
       setFreeText("");
       setImageUrls([]);
       setMealData({ items: "", time: "", type: "", sugarLevel: "" });

@@ -1,3 +1,21 @@
+/**
+ * Lifestyle Achievement System
+ * 
+ * This module handles user-declared lifestyle focus areas and achievements:
+ * - Tracks progress on specific lifestyle goals (e.g., cutting sugar, increasing protein)
+ * - Detects lifestyle shifts, avoidance patterns, recovery periods
+ * - Manages lifestyle_focus and lifestyle_achievements tables
+ * 
+ * Works alongside achievementsEnhanced.ts which handles general pattern detection.
+ * 
+ * Architecture:
+ * - Processes timeline_events relative to user's lifestyle_focus entries
+ * - Creates entries in lifestyle_achievements table
+ * - Higher confidence scoring for user-declared goals vs inferred patterns
+ * 
+ * Called asynchronously after timeline events are saved (non-blocking).
+ */
+
 import { supabase } from "@/integrations/supabase/client";
 import { differenceInDays, subDays, format } from "date-fns";
 

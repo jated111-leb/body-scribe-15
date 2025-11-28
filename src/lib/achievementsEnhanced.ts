@@ -1,3 +1,22 @@
+/**
+ * Achievement System - Enhanced Tracking Module
+ * 
+ * This module handles pattern-based achievements for general health behaviors:
+ * - Consistency streaks (e.g., daily logging, regular meals)
+ * - Reduction patterns (e.g., decreasing symptom severity)
+ * - Correlation detection (e.g., workout -> mood improvements)
+ * 
+ * Works alongside lifestyleAchievements.ts which handles lifestyle-specific goals.
+ * 
+ * Architecture:
+ * - Processes timeline_events to detect patterns
+ * - Creates/updates entries in achievements table
+ * - Generates progress updates in achievement_progress table
+ * - Creates notifications in achievement_notifications table
+ * 
+ * Called asynchronously after timeline events are saved (non-blocking).
+ */
+
 import { supabase } from "@/integrations/supabase/client";
 import { differenceInDays, subDays, format } from "date-fns";
 
