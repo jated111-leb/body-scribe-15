@@ -12,8 +12,11 @@ const Index = () => {
   const { role, loading } = useUserRole();
   // Navigate based on role
   useEffect(() => {
-    if (user && !loading && role) {
-      if (role === "dietician") {
+    if (user && !loading) {
+      if (!role) {
+        // User is authenticated but has no role - send to role selection
+        navigate("/role-selection");
+      } else if (role === "dietician") {
         navigate("/dietician-dashboard");
       } else if (role === "client") {
         navigate("/dashboard");
