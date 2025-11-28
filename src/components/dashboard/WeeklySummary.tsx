@@ -6,6 +6,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useUserRole } from "@/hooks/useUserRole";
+import { SummaryNotePanel } from "@/components/dietician/SummaryNotePanel";
 import { 
   Calendar, 
   Sparkles, 
@@ -15,7 +17,8 @@ import {
   Pill,
   RefreshCw,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  StickyNote
 } from "lucide-react";
 import { format, startOfWeek, endOfWeek, subWeeks, addWeeks } from "date-fns";
 
@@ -40,16 +43,23 @@ export const WeeklySummary = ({ userId }: WeeklySummaryProps) => {
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0); // 0 = current week, -1 = last week, etc.
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [showNotePanel, setShowNotePanel] = useState(false);
+  const [noteCount, setNoteCount] = useState(0);
   const { user } = useAuth();
+  const { role } = useUserRole();
   const { toast } = useToast();
 
   const targetUserId = userId || user?.id;
+  const isDietician = role === "dietician" && userId;
 
   useEffect(() => {
     if (targetUserId) {
       loadSummaries();
+      if (isDietician) {
+        loadNoteCount();
+      }
     }
-  }, [targetUserId]);
+  }, [targetUserId, isDietician]);
 
   useEffect(() => {
     // Subscribe to realtime updates
@@ -92,6 +102,22 @@ export const WeeklySummary = ({ userId }: WeeklySummaryProps) => {
       console.error("Error loading summaries:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadNoteCount = async () => {
+    if (!user || !userId) return;
+
+    try {
+      const { count } = await supabase
+        .from("dietician_notes")
+        .select("*", { count: "exact", head: true })
+        .eq("dietician_id", user.id)
+        .eq("client_id", userId);
+
+      setNoteCount(count || 0);
+    } catch (error) {
+      console.error("Error loading note count:", error);
     }
   };
 
@@ -283,21 +309,33 @@ export const WeeklySummary = ({ userId }: WeeklySummaryProps) => {
               </div>
             </div>
 
-            {/* Generated timestamp */}
+            {/* Generated timestamp and actions */}
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
                 Generated {new Date(currentSummary.generated_at).toLocaleString()}
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleGenerateSummary}
-                disabled={generating}
-              >
-                <RefreshCw className={`h-3 w-3 mr-1 ${generating ? "animate-spin" : ""}`} />
-                Regenerate
-              </Button>
+              <div className="flex gap-2">
+                {isDietician && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowNotePanel(true)}
+                  >
+                    <StickyNote className="h-3 w-3 mr-1" />
+                    {noteCount > 0 ? `Notes (${noteCount})` : "Add Note"}
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleGenerateSummary}
+                  disabled={generating}
+                >
+                  <RefreshCw className={`h-3 w-3 mr-1 ${generating ? "animate-spin" : ""}`} />
+                  Regenerate
+                </Button>
+              </div>
             </div>
           </>
         ) : (
@@ -330,6 +368,18 @@ export const WeeklySummary = ({ userId }: WeeklySummaryProps) => {
           </div>
         )}
       </CardContent>
+
+      {/* Note Panel for Dieticians */}
+      {isDietician && userId && (
+        <SummaryNotePanel
+          open={showNotePanel}
+          onOpenChange={setShowNotePanel}
+          clientId={userId}
+          clientName="Client"
+          summaryId={currentSummary?.id || null}
+          onNotesUpdated={loadNoteCount}
+        />
+      )}
     </Card>
   );
 };
