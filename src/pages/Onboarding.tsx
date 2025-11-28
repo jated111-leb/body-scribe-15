@@ -42,7 +42,55 @@ const Onboarding = () => {
 
   const progressPercent = (step / TOTAL_STEPS) * 100;
 
+  const validateProfileStep = () => {
+    if (!profile.name?.trim()) {
+      toast({ 
+        title: "Name required", 
+        description: "Please enter your name",
+        variant: "destructive" 
+      });
+      return false;
+    }
+    
+    const age = parseInt(profile.age);
+    if (profile.age && (isNaN(age) || age < 0 || age > 150)) {
+      toast({ 
+        title: "Invalid age", 
+        description: "Age must be between 0 and 150", 
+        variant: "destructive" 
+      });
+      return false;
+    }
+    
+    const height = parseFloat(profile.height);
+    if (profile.height && (isNaN(height) || height < 50 || height > 300)) {
+      toast({ 
+        title: "Invalid height", 
+        description: "Height must be between 50 and 300 cm", 
+        variant: "destructive" 
+      });
+      return false;
+    }
+    
+    const weight = parseFloat(profile.weight);
+    if (profile.weight && (isNaN(weight) || weight < 20 || weight > 500)) {
+      toast({ 
+        title: "Invalid weight", 
+        description: "Weight must be between 20 and 500 kg", 
+        variant: "destructive" 
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleNext = async () => {
+    // Validate profile step before proceeding
+    if (step === 2 && !validateProfileStep()) {
+      return;
+    }
+
     if (step < TOTAL_STEPS) {
       setStep(step + 1);
     } else {

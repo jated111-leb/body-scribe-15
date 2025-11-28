@@ -435,6 +435,7 @@ export type Database = {
           prescription_start: string | null
           protein: number | null
           severity: string | null
+          source: string | null
           structured_data: Json | null
           title: string
           updated_at: string | null
@@ -463,6 +464,7 @@ export type Database = {
           prescription_start?: string | null
           protein?: number | null
           severity?: string | null
+          source?: string | null
           structured_data?: Json | null
           title: string
           updated_at?: string | null
@@ -491,6 +493,7 @@ export type Database = {
           prescription_start?: string | null
           protein?: number | null
           severity?: string | null
+          source?: string | null
           structured_data?: Json | null
           title?: string
           updated_at?: string | null
