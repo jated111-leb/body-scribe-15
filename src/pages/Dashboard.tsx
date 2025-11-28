@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarView } from "@/components/dashboard/CalendarView";
 import { TimelineView } from "@/components/dashboard/TimelineView";
@@ -42,13 +42,7 @@ const Dashboard = () => {
     }
   }, [role, roleLoading, navigate]);
 
-  useEffect(() => {
-    if (user) {
-      loadProfile();
-    }
-  }, [user]);
-
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     if (!user) return;
     
     // Initialize user preferences if first time
@@ -65,7 +59,13 @@ const Dashboard = () => {
     } else {
       setProfile(data);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadProfile();
+    }
+  }, [user, loadProfile]);
 
   const handleSignOut = async () => {
     await signOut();

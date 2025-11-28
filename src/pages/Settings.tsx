@@ -375,6 +375,7 @@ const Settings = () => {
             medication_name: med.name,
             prescription_start: med.startDate.toISOString().split('T')[0],
             prescription_end: med.endDate ? med.endDate.toISOString().split('T')[0] : null,
+            source: 'settings',
           });
         }
       }
@@ -387,6 +388,7 @@ const Settings = () => {
             title: injury.name,
             event_date: injury.date.toISOString(),
             description: injury.name,
+            source: 'settings',
           });
         }
       }
@@ -399,6 +401,7 @@ const Settings = () => {
             title: surgery.name,
             event_date: surgery.date.toISOString(),
             description: surgery.name,
+            source: 'settings',
           });
         }
       }
@@ -412,6 +415,7 @@ const Settings = () => {
             event_date: inflammation.date.toISOString(),
             description: inflammation.name,
             severity: 'high',
+            source: 'settings',
           });
         }
       }
@@ -426,14 +430,17 @@ const Settings = () => {
             activity_type: workout.activityType,
             duration: workout.duration ? parseInt(workout.duration.replace(/[^\d]/g, '')) * 60 : null,
             description: workout.location,
+            source: 'settings',
           });
         }
       }
 
+      // Only delete settings-managed events, not manual entries
       await supabase
         .from('timeline_events')
         .delete()
         .eq('user_id', user.id)
+        .eq('source', 'settings')
         .in('event_type', ['medication', 'injury', 'surgery', 'illness', 'workout']);
 
       if (timelineEvents.length > 0) {

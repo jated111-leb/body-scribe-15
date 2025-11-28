@@ -65,6 +65,26 @@ const ClientProfile = () => {
 
   const loadClientProfile = async () => {
     try {
+      // 1. First verify authorization explicitly
+      const { data: relationship, error: authError } = await supabase
+        .from("dietician_clients")
+        .select("*")
+        .eq("dietician_id", user.id)
+        .eq("client_id", clientId)
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (authError || !relationship) {
+        toast({
+          title: "Access denied",
+          description: "You are not authorized to view this client's profile",
+          variant: "destructive",
+        });
+        navigate("/dietician-dashboard");
+        return;
+      }
+
+      // 2. Then fetch profile
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
