@@ -133,6 +133,42 @@ export type Database = {
         }
         Relationships: []
       }
+      client_alerts: {
+        Row: {
+          alert_type: string
+          client_id: string
+          dietician_id: string
+          dismissed_at: string | null
+          id: string
+          is_dismissed: boolean | null
+          message: string
+          severity: string | null
+          triggered_at: string | null
+        }
+        Insert: {
+          alert_type: string
+          client_id: string
+          dietician_id: string
+          dismissed_at?: string | null
+          id?: string
+          is_dismissed?: boolean | null
+          message: string
+          severity?: string | null
+          triggered_at?: string | null
+        }
+        Update: {
+          alert_type?: string
+          client_id?: string
+          dietician_id?: string
+          dismissed_at?: string | null
+          id?: string
+          is_dismissed?: boolean | null
+          message?: string
+          severity?: string | null
+          triggered_at?: string | null
+        }
+        Relationships: []
+      }
       client_invitations: {
         Row: {
           accepted_at: string | null
@@ -172,6 +208,7 @@ export type Database = {
           created_at: string | null
           dietician_id: string
           id: string
+          is_pinned: boolean | null
           status: string | null
           updated_at: string | null
         }
@@ -180,6 +217,7 @@ export type Database = {
           created_at?: string | null
           dietician_id: string
           id?: string
+          is_pinned?: boolean | null
           status?: string | null
           updated_at?: string | null
         }
@@ -188,10 +226,52 @@ export type Database = {
           created_at?: string | null
           dietician_id?: string
           id?: string
+          is_pinned?: boolean | null
           status?: string | null
           updated_at?: string | null
         }
         Relationships: []
+      }
+      dietician_notes: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          dietician_id: string
+          id: string
+          is_flagged: boolean | null
+          note: string
+          updated_at: string | null
+          weekly_summary_id: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          dietician_id: string
+          id?: string
+          is_flagged?: boolean | null
+          note: string
+          updated_at?: string | null
+          weekly_summary_id?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          dietician_id?: string
+          id?: string
+          is_flagged?: boolean | null
+          note?: string
+          updated_at?: string | null
+          weekly_summary_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dietician_notes_weekly_summary_id_fkey"
+            columns: ["weekly_summary_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_summaries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       inferred_patterns: {
         Row: {
