@@ -21,6 +21,23 @@ const Onboarding = () => {
 
   useEffect(() => {
     if (!user) navigate("/auth");
+    
+    // Check if already completed onboarding
+    const checkOnboarding = async () => {
+      if (!user) return;
+      
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", user.id)
+        .single();
+      
+      if (profile?.onboarding_completed) {
+        navigate("/dashboard", { replace: true });
+      }
+    };
+    
+    checkOnboarding();
   }, [user, navigate]);
 
   // Form state (simplified for demo)
@@ -106,6 +123,7 @@ const Onboarding = () => {
         medications: health.medications ? health.medications.split(",").map(m => m.trim()).filter(Boolean) : [],
         allergies: health.allergies ? health.allergies.split(",").map(a => a.trim()).filter(Boolean) : [],
         goals: goals ? goals.split(",").map(g => g.trim()).filter(Boolean) : [],
+        onboarding_completed: true,
       }).eq("id", user.id);
       }
       toast({

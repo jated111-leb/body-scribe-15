@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import RoleSelection from "./pages/RoleSelection";
 import Onboarding from "./pages/Onboarding";
+import DieticianOnboarding from "./pages/DieticianOnboarding";
 import Dashboard from "./pages/Dashboard";
 import DieticianDashboard from "./pages/DieticianDashboard";
 import ClientProfile from "./pages/ClientProfile";
@@ -40,6 +41,11 @@ const App = () => (
             <Route path="/onboarding" element={
               <ProtectedRoute requireAuth={true}>
                 <Onboarding />
+              </ProtectedRoute>
+            } />
+            <Route path="/dietician-onboarding" element={
+              <ProtectedRoute requireAuth={true}>
+                <DieticianOnboarding />
               </ProtectedRoute>
             } />
             <Route path="/dashboard" element={

@@ -55,21 +55,47 @@ export const ProtectedRoute = ({
 
     // If user is logged in, check profile and role
     if (user && !roleLoading) {
+      const currentPath = window.location.pathname;
+      
       // User hasn't selected a role yet, send to role selection
       if (roleSelected === false || !role) {
         navigate("/role-selection", { replace: true });
         return;
       }
 
-      // If a specific role is required, check if user has it
-      if (requireRole && role !== requireRole) {
-        // Redirect based on their actual role
-        if (role === "dietician") {
-          navigate("/dietician-dashboard", { replace: true });
-        } else if (role === "client") {
-          navigate("/dashboard", { replace: true });
+      // Check onboarding completion from the profile we already fetched
+      const checkOnboardingCompletion = async () => {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("onboarding_completed")
+          .eq("id", user.id)
+          .single();
+
+        const onboardingCompleted = profile?.onboarding_completed ?? false;
+
+        // If onboarding not completed, redirect to appropriate onboarding page
+        if (!onboardingCompleted) {
+          if (role === "dietician" && currentPath !== "/dietician-onboarding") {
+            navigate("/dietician-onboarding", { replace: true });
+            return;
+          } else if (role === "client" && currentPath !== "/onboarding") {
+            navigate("/onboarding", { replace: true });
+            return;
+          }
         }
-      }
+
+        // If a specific role is required, check if user has it
+        if (requireRole && role !== requireRole) {
+          // Redirect based on their actual role
+          if (role === "dietician") {
+            navigate("/dietician-dashboard", { replace: true });
+          } else if (role === "client") {
+            navigate("/dashboard", { replace: true });
+          }
+        }
+      };
+
+      checkOnboardingCompletion();
     }
   }, [user, role, authLoading, roleLoading, checkingProfile, roleSelected, requireAuth, requireRole, navigate]);
 
