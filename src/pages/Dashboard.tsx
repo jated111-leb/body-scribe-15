@@ -13,6 +13,7 @@ import { InferredPatternPrompt } from "@/components/dashboard/InferredPatternPro
 import { LifestyleAchievements } from "@/components/dashboard/LifestyleAchievements";
 import { QuickLogDialog } from "@/components/dashboard/QuickLogDialog";
 import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
+import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Settings, Calendar, List } from "lucide-react";
@@ -22,18 +23,25 @@ import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useAchievementNotifications } from "@/hooks/useAchievementNotifications";
 import { initializeUserPreferences } from "@/lib/initializeUserPreferences";
+import { analytics } from "@/lib/analytics";
 
 const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showQuickLog, setShowQuickLog] = useState(false);
   const [profile, setProfile] = useState<any>(null);
-  const { user, signOut, loading } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const { user, signOut, loading: authLoading } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   // Listen for achievement notifications
   useAchievementNotifications(user?.id);
+  
+  // Track page view
+  useEffect(() => {
+    analytics.pageView('Dashboard');
+  }, []);
 
   // Redirect dieticians to their specialized dashboard
   useEffect(() => {
@@ -45,6 +53,7 @@ const Dashboard = () => {
   const loadProfile = useCallback(async () => {
     if (!user) return;
     
+    setLoading(true);
     // Initialize user preferences if first time
     await initializeUserPreferences(user.id);
     
@@ -59,6 +68,7 @@ const Dashboard = () => {
     } else {
       setProfile(data);
     }
+    setLoading(false);
   }, [user]);
 
   useEffect(() => {
@@ -68,6 +78,7 @@ const Dashboard = () => {
   }, [user, loadProfile]);
 
   const handleSignOut = async () => {
+    analytics.reset();
     await signOut();
     toast({
       title: "Signed out",
@@ -75,6 +86,16 @@ const Dashboard = () => {
     });
     navigate("/");
   };
+
+  if (loading || authLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="max-w-7xl mx-auto p-6">
+          <DashboardSkeleton />
+        </div>
+      </div>
+    );
+  }
 
 
   return (

@@ -8,18 +8,33 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Calendar as CalendarIcon, Plus, X } from "lucide-react";
+import { ArrowLeft, Save, Calendar as CalendarIcon, Plus, X, Download, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { downloadDataExport } from "@/lib/dataExport";
+import { analytics } from "@/lib/analytics";
 
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, signOut } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [exportingData, setExportingData] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const [profile, setProfile] = useState({
     name: "",
@@ -1004,6 +1019,138 @@ const Settings = () => {
                 onChange={(e) => setGoals(e.target.value)}
                 rows={4}
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Privacy & Data Export */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Privacy & Data</CardTitle>
+            <CardDescription>Export or delete your data</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <h3 className="font-medium mb-2">Export Your Data</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Download all your data in JSON format. This includes your profile, timeline events, 
+                achievements, and preferences.
+              </p>
+              <Button 
+                variant="outline" 
+                onClick={async () => {
+                  if (!user) {
+                    toast({
+                      title: "Error",
+                      description: "You must be signed in to export data",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  
+                  setExportingData(true);
+                  try {
+                    await downloadDataExport(user.id);
+                    analytics.track('Data Exported');
+                    toast({
+                      title: "Data exported",
+                      description: "Your data has been downloaded successfully",
+                    });
+                  } catch (error: any) {
+                    console.error('Error exporting data:', error);
+                    toast({
+                      title: "Error",
+                      description: error.message || "Failed to export data",
+                      variant: "destructive",
+                    });
+                  } finally {
+                    setExportingData(false);
+                  }
+                }}
+                disabled={exportingData}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                {exportingData ? "Exporting..." : "Export My Data"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Danger Zone - Account Deletion */}
+        <Card className="border-destructive">
+          <CardHeader>
+            <CardTitle className="text-destructive">Danger Zone</CardTitle>
+            <CardDescription>Irreversible actions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div>
+              <h3 className="font-medium mb-2">Delete Account</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Permanently delete your account and all associated data. This action cannot be undone.
+              </p>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" disabled={deletingAccount}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete My Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete your account and remove all your data from our servers.
+                      This includes:
+                      <ul className="list-disc list-inside mt-2 space-y-1">
+                        <li>Profile information</li>
+                        <li>All timeline events (meals, workouts, etc.)</li>
+                        <li>Achievements and progress</li>
+                        <li>Weekly summaries</li>
+                        <li>Lifestyle focus and patterns</li>
+                      </ul>
+                      <p className="mt-3 font-semibold">This action cannot be undone.</p>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={async () => {
+                        if (!user) return;
+                        
+                        setDeletingAccount(true);
+                        try {
+                          const { error } = await supabase.functions.invoke('delete-user-account');
+                          
+                          if (error) throw error;
+                          
+                          analytics.track('Account Deleted');
+                          analytics.reset();
+                          
+                          toast({
+                            title: "Account deleted",
+                            description: "Your account has been permanently deleted",
+                          });
+                          
+                          await signOut();
+                          navigate("/");
+                        } catch (error: any) {
+                          console.error('Error deleting account:', error);
+                          toast({
+                            title: "Error",
+                            description: error.message || "Failed to delete account",
+                            variant: "destructive",
+                          });
+                        } finally {
+                          setDeletingAccount(false);
+                        }
+                      }}
+                    >
+                      Delete Account
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </CardContent>
         </Card>

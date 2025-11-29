@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { FloatingChat } from "@/components/FloatingChat";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import RoleSelection from "./pages/RoleSelection";
@@ -18,64 +19,70 @@ import AcceptInvitation from "./pages/AcceptInvitation";
 import Settings from "./pages/Settings";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/invite" element={<AcceptInvitation />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/role-selection" element={
-              <ProtectedRoute requireAuth={true}>
-                <RoleSelection />
-              </ProtectedRoute>
-            } />
-            <Route path="/onboarding" element={
-              <ProtectedRoute requireAuth={true}>
-                <Onboarding />
-              </ProtectedRoute>
-            } />
-            <Route path="/dietician-onboarding" element={
-              <ProtectedRoute requireAuth={true}>
-                <DieticianOnboarding />
-              </ProtectedRoute>
-            } />
-            <Route path="/dashboard" element={
-              <ProtectedRoute requireRole="client">
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/dietician-dashboard" element={
-              <ProtectedRoute requireRole="dietician">
-                <DieticianDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/client/:clientId" element={
-              <ProtectedRoute requireRole="dietician">
-                <ClientProfile />
-              </ProtectedRoute>
-            } />
-            <Route path="/settings" element={
-              <ProtectedRoute requireAuth={true}>
-                <Settings />
-              </ProtectedRoute>
-            } />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <FloatingChat />
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/invite" element={<AcceptInvitation />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/role-selection" element={
+                <ProtectedRoute requireAuth={true}>
+                  <RoleSelection />
+                </ProtectedRoute>
+              } />
+              <Route path="/onboarding" element={
+                <ProtectedRoute requireAuth={true}>
+                  <Onboarding />
+                </ProtectedRoute>
+              } />
+              <Route path="/dietician-onboarding" element={
+                <ProtectedRoute requireAuth={true}>
+                  <DieticianOnboarding />
+                </ProtectedRoute>
+              } />
+              <Route path="/dashboard" element={
+                <ProtectedRoute requireRole="client">
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/dietician-dashboard" element={
+                <ProtectedRoute requireRole="dietician">
+                  <DieticianDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/client/:clientId" element={
+                <ProtectedRoute requireRole="dietician">
+                  <ClientProfile />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute requireAuth={true}>
+                  <Settings />
+                </ProtectedRoute>
+              } />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <FloatingChat />
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
