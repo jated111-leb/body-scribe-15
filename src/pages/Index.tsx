@@ -56,7 +56,7 @@ const Index = () => {
                   Sign In
                 </Button>
                 <Button 
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate('/auth?tab=signup')}
                   className="bg-gradient-primary"
                 >
                   Sign Up

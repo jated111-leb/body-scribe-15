@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -17,10 +18,34 @@ export const ProtectedRoute = ({
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { role, loading: roleLoading } = useUserRole();
+  const [roleSelected, setRoleSelected] = useState<boolean | null>(null);
+  const [checkingProfile, setCheckingProfile] = useState(true);
+
+  // Check if user has selected a role in their profile
+  useEffect(() => {
+    const checkProfile = async () => {
+      if (!user) {
+        setRoleSelected(null);
+        setCheckingProfile(false);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role_selected")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      setRoleSelected(profile?.role_selected ?? false);
+      setCheckingProfile(false);
+    };
+
+    checkProfile();
+  }, [user]);
 
   useEffect(() => {
-    // Wait for auth to load
-    if (authLoading) return;
+    // Wait for all loading to complete
+    if (authLoading || checkingProfile) return;
 
     // If auth is required and user is not logged in, redirect to auth page
     if (requireAuth && !user) {
@@ -28,10 +53,10 @@ export const ProtectedRoute = ({
       return;
     }
 
-    // If user is logged in, check for role
+    // If user is logged in, check profile and role
     if (user && !roleLoading) {
-      // User has no role assigned, send to role selection
-      if (!role) {
+      // User hasn't selected a role yet, send to role selection
+      if (roleSelected === false || !role) {
         navigate("/role-selection", { replace: true });
         return;
       }
@@ -46,10 +71,10 @@ export const ProtectedRoute = ({
         }
       }
     }
-  }, [user, role, authLoading, roleLoading, requireAuth, requireRole, navigate]);
+  }, [user, role, authLoading, roleLoading, checkingProfile, roleSelected, requireAuth, requireRole, navigate]);
 
-  // Show loading while checking authentication and role
-  if (authLoading || (user && roleLoading)) {
+  // Show loading while checking authentication, profile, and role
+  if (authLoading || checkingProfile || (user && roleLoading)) {
     return (
       <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
@@ -62,8 +87,8 @@ export const ProtectedRoute = ({
     return null;
   }
 
-  // Don't render if waiting for role
-  if (user && roleLoading) {
+  // Don't render if waiting for profile or role
+  if (user && (checkingProfile || roleLoading)) {
     return null;
   }
 
