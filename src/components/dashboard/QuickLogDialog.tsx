@@ -29,6 +29,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, subDays, isToday } from "date-fns";
 import { EVENT_EMOJIS } from "@/lib/iconEmojis";
+import { analytics } from "@/lib/analytics";
 
 interface QuickLogDialogProps {
   open: boolean;
@@ -235,6 +236,12 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
       const { error } = await supabase.from("timeline_events").insert(eventData);
 
       if (error) throw error;
+
+      // Track event creation
+      analytics.track('Event Created', {
+        event_type: activeTab,
+        has_images: imageUrls.length > 0,
+      });
 
       // Show immediate success feedback
       toast({

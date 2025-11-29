@@ -5,6 +5,7 @@ import { ArrowRight, Activity, Calendar, MessageSquare, TrendingUp } from "lucid
 import heroBg from "@/assets/hero-bg.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import { LegalFooter } from "@/components/LegalFooter";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen bg-gradient-subtle flex flex-col">
       {/* Navigation Header */}
       <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
@@ -187,6 +188,7 @@ const Index = () => {
           </div>
         </div>
       </section>
+      <LegalFooter />
     </div>
   );
 };

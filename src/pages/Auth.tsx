@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { LegalFooter } from "@/components/LegalFooter";
+import { analytics } from "@/lib/analytics";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -45,6 +47,12 @@ const Auth = () => {
       });
       setLoading(false);
     } else {
+      // Track sign in event
+      analytics.track('Sign In', {
+        email,
+        method: 'email',
+      });
+      
       toast({
         title: "Welcome back!",
         description: "You've successfully signed in.",
@@ -68,6 +76,12 @@ const Auth = () => {
       });
       setLoading(false);
     } else {
+      // Track sign up event
+      analytics.track('Sign Up', {
+        email,
+        method: 'email',
+      });
+      
       toast({
         title: "Account created!",
         description: "Welcome to Life Tracker.",
@@ -226,6 +240,7 @@ const Auth = () => {
           </Tabs>
         </CardContent>
       </Card>
+      <LegalFooter />
     </div>
   );
 };

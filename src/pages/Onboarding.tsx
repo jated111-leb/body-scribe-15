@@ -10,14 +10,59 @@ import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { analytics } from "@/lib/analytics";
 
 const TOTAL_STEPS = 4;
+const STORAGE_KEY = 'onboarding_progress';
 
 const Onboarding = () => {
   const [step, setStep] = useState(1);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Form state (simplified for demo)
+  const [profile, setProfile] = useState({
+    name: "",
+    age: "",
+    sex: "",
+    height: "",
+    weight: "",
+  });
+
+  const [health, setHealth] = useState({
+    conditions: "",
+    medications: "",
+    allergies: "",
+  });
+
+  const [goals, setGoals] = useState("");
+
+  // Save progress to localStorage whenever state changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      step,
+      profile,
+      health,
+      goals,
+    }));
+  }, [step, profile, health, goals]);
+
+  // Restore progress from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const { step: savedStep, profile: savedProfile, health: savedHealth, goals: savedGoals } = JSON.parse(saved);
+        if (savedStep) setStep(savedStep);
+        if (savedProfile) setProfile(savedProfile);
+        if (savedHealth) setHealth(savedHealth);
+        if (savedGoals) setGoals(savedGoals);
+      } catch (error) {
+        console.error('Error restoring onboarding progress:', error);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (!user) navigate("/auth");
@@ -39,23 +84,6 @@ const Onboarding = () => {
     
     checkOnboarding();
   }, [user, navigate]);
-
-  // Form state (simplified for demo)
-  const [profile, setProfile] = useState({
-    name: "",
-    age: "",
-    sex: "",
-    height: "",
-    weight: "",
-  });
-
-  const [health, setHealth] = useState({
-    conditions: "",
-    medications: "",
-    allergies: "",
-  });
-
-  const [goals, setGoals] = useState("");
 
   const progressPercent = (step / TOTAL_STEPS) * 100;
 
@@ -125,6 +153,16 @@ const Onboarding = () => {
         goals: goals ? goals.split(",").map(g => g.trim()).filter(Boolean) : [],
         onboarding_completed: true,
       }).eq("id", user.id);
+      
+      // Track onboarding completion
+      analytics.track('Onboarding Completed', {
+        hasHealthConditions: !!health.conditions,
+        hasMedications: !!health.medications,
+        hasGoals: !!goals,
+      });
+      
+      // Clear saved progress
+      localStorage.removeItem(STORAGE_KEY);
       }
       toast({
         title: "Welcome to Life Tracker!",
