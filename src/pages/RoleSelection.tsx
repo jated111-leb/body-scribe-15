@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Stethoscope, User } from "lucide-react";
@@ -11,8 +12,33 @@ const RoleSelection = () => {
   const [selectedRole, setSelectedRole] = useState<'dietician' | 'client' | null>(null);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+  const { role } = useUserRole();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Prevent users who already selected a role from accessing this page
+  useEffect(() => {
+    const checkRoleStatus = async () => {
+      if (!user) return;
+      
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role_selected")
+        .eq("id", user.id)
+        .maybeSingle();
+      
+      // If role already selected, redirect to appropriate dashboard
+      if (profile?.role_selected) {
+        if (role === 'dietician') {
+          navigate('/dietician-dashboard', { replace: true });
+        } else if (role === 'client') {
+          navigate('/dashboard', { replace: true });
+        }
+      }
+    };
+    
+    checkRoleStatus();
+  }, [user, role, navigate]);
 
   const handleRoleSelect = async () => {
     if (!selectedRole || !user) return;
