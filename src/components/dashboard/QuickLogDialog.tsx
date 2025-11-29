@@ -513,7 +513,7 @@ const MomentForm = ({ data, onChange }: { data: any; onChange: (data: any) => vo
       <p className="text-xs text-muted-foreground mb-3">
         Quick micro-logs that help Aura observe your rhythm
       </p>
-      <div className="grid grid-cols-1 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {[
           { value: "coffee", label: "☕ Coffee", desc: "Regular coffee moment" },
           { value: "tea", label: "🧋 Tea", desc: "Tea instead of coffee" },
