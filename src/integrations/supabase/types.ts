@@ -273,6 +273,39 @@ export type Database = {
           },
         ]
       }
+      dietician_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          id: string
+          practice_name: string | null
+          specialty_areas: string[] | null
+          updated_at: string | null
+          user_id: string
+          years_experience: number | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          id?: string
+          practice_name?: string | null
+          specialty_areas?: string[] | null
+          updated_at?: string | null
+          user_id: string
+          years_experience?: number | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          id?: string
+          practice_name?: string | null
+          specialty_areas?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
       inferred_patterns: {
         Row: {
           confirmation_shown: boolean | null
@@ -411,6 +444,7 @@ export type Database = {
           height: number | null
           id: string
           medications: string[] | null
+          onboarding_completed: boolean | null
           role_selected: boolean | null
           sex: string | null
           updated_at: string | null
@@ -428,6 +462,7 @@ export type Database = {
           height?: number | null
           id: string
           medications?: string[] | null
+          onboarding_completed?: boolean | null
           role_selected?: boolean | null
           sex?: string | null
           updated_at?: string | null
@@ -445,6 +480,7 @@ export type Database = {
           height?: number | null
           id?: string
           medications?: string[] | null
+          onboarding_completed?: boolean | null
           role_selected?: boolean | null
           sex?: string | null
           updated_at?: string | null

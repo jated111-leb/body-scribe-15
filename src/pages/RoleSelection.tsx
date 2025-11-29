@@ -84,7 +84,7 @@ const RoleSelection = () => {
 
       // Navigate based on role
       if (selectedRole === 'dietician') {
-        navigate("/dietician-dashboard");
+        navigate("/dietician-onboarding");
       } else {
         navigate("/onboarding");
       }
