@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ImageUpload } from "./ImageUpload";
-import { Utensils, Activity, Pill, AlertCircle } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,6 +25,10 @@ import {
   CANONICAL_MEAL_TYPES,
   getMealTypeDisplay
 } from "@/utils/normalization";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format, subDays, isToday } from "date-fns";
+import { EVENT_EMOJIS } from "@/lib/iconEmojis";
 
 interface QuickLogDialogProps {
   open: boolean;
@@ -60,11 +64,27 @@ interface MomentFormData {
   type: string;
 }
 
+interface DoctorVisitFormData {
+  doctorName: string;
+  reason: string;
+  diagnosis: string;
+  notes: string;
+}
+
+interface InjuryFormData {
+  bodyPart: string;
+  severity: string;
+  cause: string;
+  notes: string;
+}
+
 export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
   const [activeTab, setActiveTab] = useState("freetext");
   const [freeText, setFreeText] = useState("");
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [eventDate, setEventDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -74,6 +94,8 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
   const [medicationData, setMedicationData] = useState<MedicationFormData>({ name: "", dose: "", time: "" });
   const [symptomData, setSymptomData] = useState<SymptomFormData>({ name: "", severity: "", notes: "" });
   const [momentData, setMomentData] = useState<MomentFormData>({ type: "" });
+  const [doctorVisitData, setDoctorVisitData] = useState<DoctorVisitFormData>({ doctorName: "", reason: "", diagnosis: "", notes: "" });
+  const [injuryData, setInjuryData] = useState<InjuryFormData>({ bodyPart: "", severity: "", cause: "", notes: "" });
 
   const handleSave = async () => {
     if (!user) {
@@ -91,7 +113,7 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
       let eventData: any = {
         user_id: user.id,
         attachment_urls: imageUrls,
-        event_date: new Date().toISOString(),
+        event_date: eventDate.toISOString(),
       };
 
       // Build entry based on active tab with normalized canonical types
@@ -187,6 +209,27 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
             structured_data: { moment_type: momentData.type },
           };
           break;
+        case "doctor_visit":
+          eventData = {
+            ...eventData,
+            event_type: "doctor_visit",
+            title: `Doctor Visit: ${doctorVisitData.doctorName || 'Appointment'}`,
+            doctor_name: doctorVisitData.doctorName,
+            diagnosis: doctorVisitData.diagnosis,
+            description: doctorVisitData.notes,
+            structured_data: { reason: doctorVisitData.reason },
+          };
+          break;
+        case "injury":
+          eventData = {
+            ...eventData,
+            event_type: "injury",
+            title: `Injury: ${injuryData.bodyPart || 'Injury'}`,
+            severity: injuryData.severity,
+            description: `${injuryData.cause ? `Cause: ${injuryData.cause}. ` : ''}${injuryData.notes}`,
+            structured_data: { body_part: injuryData.bodyPart },
+          };
+          break;
       }
 
       const { error } = await supabase.from("timeline_events").insert(eventData);
@@ -240,11 +283,15 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
       // Reset all form states immediately
       setFreeText("");
       setImageUrls([]);
+      setEventDate(new Date());
+      setShowDatePicker(false);
       setMealData({ items: "", time: "", type: "", sugarLevel: "" });
       setWorkoutData({ type: "", duration: "", intensity: "" });
       setMedicationData({ name: "", dose: "", time: "" });
       setSymptomData({ name: "", severity: "", notes: "" });
       setMomentData({ type: "" });
+      setDoctorVisitData({ doctorName: "", reason: "", diagnosis: "", notes: "" });
+      setInjuryData({ bodyPart: "", severity: "", cause: "", notes: "" });
       onOpenChange(false);
     } catch (error: any) {
       console.error('Error logging entry:', error);
@@ -268,23 +315,93 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
           </DialogDescription>
         </DialogHeader>
 
+        {/* Date/Time Picker - Shared across all tabs */}
+        <div className="flex items-center gap-2 mb-4 p-3 bg-muted/50 rounded-lg">
+          <Label className="text-sm font-medium whitespace-nowrap">When:</Label>
+          <div className="flex gap-2 flex-wrap">
+            <Button 
+              type="button"
+              variant={isToday(eventDate) ? "default" : "outline"} 
+              size="sm"
+              onClick={() => {
+                setEventDate(new Date());
+                setShowDatePicker(false);
+              }}
+            >
+              Now
+            </Button>
+            <Button 
+              type="button"
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                setEventDate(subDays(new Date(), 1));
+                setShowDatePicker(false);
+              }}
+            >
+              Yesterday
+            </Button>
+            <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
+              <PopoverTrigger asChild>
+                <Button type="button" variant="outline" size="sm" className="gap-2">
+                  <CalendarIcon className="h-4 w-4" />
+                  {format(eventDate, 'MMM d, yyyy h:mm a')}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <div className="p-3 space-y-3">
+                  <Calendar 
+                    mode="single"
+                    selected={eventDate} 
+                    onSelect={(date) => date && setEventDate(date)}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                  <div>
+                    <Label className="text-xs">Time</Label>
+                    <Input 
+                      type="time" 
+                      value={format(eventDate, 'HH:mm')}
+                      onChange={(e) => {
+                        const [hours, minutes] = e.target.value.split(':');
+                        const newDate = new Date(eventDate);
+                        newDate.setHours(parseInt(hours), parseInt(minutes));
+                        setEventDate(newDate);
+                      }}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+
         <Tabs defaultValue="freetext" className="mt-4" onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="freetext">Free Text</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-8">
+            <TabsTrigger value="freetext" title="Free Text">
+              <span className="text-lg">{EVENT_EMOJIS.note}</span>
+            </TabsTrigger>
             <TabsTrigger value="moment" title="Moments">
-              <span className="text-base">☕</span>
+              <span className="text-lg">{EVENT_EMOJIS.moment}</span>
             </TabsTrigger>
-            <TabsTrigger value="meal">
-              <Utensils className="h-4 w-4" />
+            <TabsTrigger value="meal" title="Meals">
+              <span className="text-lg">{EVENT_EMOJIS.meal}</span>
             </TabsTrigger>
-            <TabsTrigger value="workout">
-              <Activity className="h-4 w-4" />
+            <TabsTrigger value="workout" title="Workouts">
+              <span className="text-lg">{EVENT_EMOJIS.workout}</span>
             </TabsTrigger>
-            <TabsTrigger value="med">
-              <Pill className="h-4 w-4" />
+            <TabsTrigger value="med" title="Medications">
+              <span className="text-lg">{EVENT_EMOJIS.medication}</span>
             </TabsTrigger>
-            <TabsTrigger value="symptom">
-              <AlertCircle className="h-4 w-4" />
+            <TabsTrigger value="symptom" title="Symptoms">
+              <span className="text-lg">{EVENT_EMOJIS.symptom}</span>
+            </TabsTrigger>
+            <TabsTrigger value="doctor_visit" title="Doctor Visits">
+              <span className="text-lg">{EVENT_EMOJIS.doctor_visit}</span>
+            </TabsTrigger>
+            <TabsTrigger value="injury" title="Injuries">
+              <span className="text-lg">{EVENT_EMOJIS.injury}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -347,6 +464,26 @@ export const QuickLogDialog = ({ open, onOpenChange }: QuickLogDialogProps) => {
 
           <TabsContent value="symptom" className="space-y-4">
             <SymptomForm data={symptomData} onChange={setSymptomData} />
+            <div>
+              <Label>Add Images (Optional)</Label>
+              <div className="mt-2">
+                <ImageUpload onImagesChange={setImageUrls} maxImages={5} />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="doctor_visit" className="space-y-4">
+            <DoctorVisitForm data={doctorVisitData} onChange={setDoctorVisitData} />
+            <div>
+              <Label>Add Images (Optional)</Label>
+              <div className="mt-2">
+                <ImageUpload onImagesChange={setImageUrls} maxImages={5} />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="injury" className="space-y-4">
+            <InjuryForm data={injuryData} onChange={setInjuryData} />
             <div>
               <Label>Add Images (Optional)</Label>
               <div className="mt-2">
@@ -615,6 +752,96 @@ const SymptomForm = ({ data, onChange }: { data: any; onChange: (data: any) => v
       <Textarea
         id="symptom-notes"
         placeholder="Context, triggers, or other relevant details..."
+        rows={3}
+        value={data.notes}
+        onChange={(e) => onChange({ ...data, notes: e.target.value })}
+      />
+    </div>
+  </div>
+);
+
+const DoctorVisitForm = ({ data, onChange }: { data: any; onChange: (data: any) => void }) => (
+  <div className="space-y-4">
+    <div>
+      <Label htmlFor="doctor-name">Doctor's Name</Label>
+      <Input 
+        id="doctor-name" 
+        placeholder="e.g., Dr. Smith" 
+        value={data.doctorName}
+        onChange={(e) => onChange({ ...data, doctorName: e.target.value })}
+      />
+    </div>
+    <div>
+      <Label htmlFor="visit-reason">Reason for Visit</Label>
+      <Input 
+        id="visit-reason" 
+        placeholder="e.g., Annual checkup, follow-up" 
+        value={data.reason}
+        onChange={(e) => onChange({ ...data, reason: e.target.value })}
+      />
+    </div>
+    <div>
+      <Label htmlFor="diagnosis">Diagnosis/Findings</Label>
+      <Textarea
+        id="diagnosis"
+        placeholder="What did the doctor say?"
+        rows={2}
+        value={data.diagnosis}
+        onChange={(e) => onChange({ ...data, diagnosis: e.target.value })}
+      />
+    </div>
+    <div>
+      <Label htmlFor="doctor-notes">Additional Notes</Label>
+      <Textarea
+        id="doctor-notes"
+        placeholder="Prescriptions, recommendations, next steps..."
+        rows={3}
+        value={data.notes}
+        onChange={(e) => onChange({ ...data, notes: e.target.value })}
+      />
+    </div>
+  </div>
+);
+
+const InjuryForm = ({ data, onChange }: { data: any; onChange: (data: any) => void }) => (
+  <div className="space-y-4">
+    <div>
+      <Label htmlFor="body-part">Body Part Affected</Label>
+      <Input 
+        id="body-part" 
+        placeholder="e.g., Right ankle, left wrist" 
+        value={data.bodyPart}
+        onChange={(e) => onChange({ ...data, bodyPart: e.target.value })}
+      />
+    </div>
+    <div>
+      <Label htmlFor="injury-severity">Severity</Label>
+      <select
+        id="injury-severity"
+        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        value={data.severity}
+        onChange={(e) => onChange({ ...data, severity: e.target.value })}
+      >
+        <option value="">Select severity...</option>
+        <option value="minor">Minor</option>
+        <option value="moderate">Moderate</option>
+        <option value="severe">Severe</option>
+      </select>
+    </div>
+    <div>
+      <Label htmlFor="injury-cause">How did it happen?</Label>
+      <Input 
+        id="injury-cause" 
+        placeholder="e.g., Playing basketball, fell down stairs" 
+        value={data.cause}
+        onChange={(e) => onChange({ ...data, cause: e.target.value })}
+      />
+    </div>
+    <div>
+      <Label htmlFor="injury-notes">Additional Notes</Label>
+      <Textarea
+        id="injury-notes"
+        placeholder="Treatment received, pain level, mobility impact..."
         rows={3}
         value={data.notes}
         onChange={(e) => onChange({ ...data, notes: e.target.value })}

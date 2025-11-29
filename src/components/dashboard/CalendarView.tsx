@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getGuestEvents } from "@/lib/demo";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, isSameDay } from "date-fns";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Utensils, Moon, Pill, Zap, Activity, Brain, StickyNote } from "lucide-react";
+import { EVENT_EMOJIS } from "@/lib/iconEmojis";
 
 interface CalendarViewProps {
   selectedDate: Date;
@@ -39,19 +39,24 @@ interface ExtendedTimelineEvent {
 }
 
 type CategoryConfig = {
-  icon: React.ReactNode;
+  emoji: string;
   label: string;
   color: string;
 };
 
 const CATEGORY_MAP: Record<string, CategoryConfig> = {
-  meal: { icon: <Utensils className="w-3 h-3" />, label: "Meals", color: "bg-health" },
-  sleep: { icon: <Moon className="w-3 h-3" />, label: "Sleep", color: "bg-health" },
-  medication: { icon: <Pill className="w-3 h-3" />, label: "Supplements", color: "bg-health" },
-  workout: { icon: <Zap className="w-3 h-3" />, label: "Activity", color: "bg-health" },
-  injury: { icon: <Activity className="w-3 h-3" />, label: "Symptoms", color: "bg-destructive" },
-  mood: { icon: <Brain className="w-3 h-3" />, label: "Mood", color: "bg-health" },
-  doctor_visit: { icon: <StickyNote className="w-3 h-3" />, label: "Notes", color: "bg-health" },
+  meal: { emoji: EVENT_EMOJIS.meal, label: "Meals", color: "bg-health" },
+  workout: { emoji: EVENT_EMOJIS.workout, label: "Workouts", color: "bg-health" },
+  medication: { emoji: EVENT_EMOJIS.medication, label: "Medications", color: "bg-health" },
+  symptom: { emoji: EVENT_EMOJIS.symptom, label: "Symptoms", color: "bg-destructive" },
+  doctor_visit: { emoji: EVENT_EMOJIS.doctor_visit, label: "Doctor Visits", color: "bg-health" },
+  injury: { emoji: EVENT_EMOJIS.injury, label: "Injuries", color: "bg-destructive" },
+  note: { emoji: EVENT_EMOJIS.note, label: "Notes", color: "bg-health" },
+  moment: { emoji: EVENT_EMOJIS.moment, label: "Moments", color: "bg-health" },
+  sleep: { emoji: EVENT_EMOJIS.sleep, label: "Sleep", color: "bg-health" },
+  mood: { emoji: EVENT_EMOJIS.mood, label: "Mood", color: "bg-health" },
+  vitals: { emoji: EVENT_EMOJIS.vitals, label: "Vitals", color: "bg-health" },
+  water: { emoji: EVENT_EMOJIS.water, label: "Water", color: "bg-health" },
 };
 
 // Normalize to local YYYY-MM-DD to avoid timezone shifts
@@ -238,7 +243,7 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
                         </div>
                       )}
                       
-                      {/* Category icon chips - monochrome */}
+                      {/* Category icon chips - emojis */}
                       <div className="flex flex-wrap gap-1 justify-center">
                         {categories.slice(0, 4).map((eventType) => {
                           const config = CATEGORY_MAP[eventType];
@@ -246,10 +251,10 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
                           return (
                             <div 
                               key={eventType}
-                              className="bg-muted/50 rounded-md p-1 text-muted-foreground hover:bg-health/10 hover:text-health transition-all duration-200"
+                              className="bg-muted/50 rounded-md p-1 text-lg"
                               title={config.label}
                             >
-                              {config.icon}
+                              {config.emoji}
                             </div>
                           );
                         })}
@@ -315,8 +320,8 @@ export const CalendarView = ({ selectedDate, onSelectDate, clientId }: CalendarV
                   >
                     {/* Category header */}
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2.5 rounded-lg bg-gradient-primary text-white shadow-sm group-hover:shadow-md transition-shadow">
-                        {config.icon}
+                      <div className="p-2.5 rounded-lg bg-gradient-primary text-white shadow-sm group-hover:shadow-md transition-shadow text-xl">
+                        {config.emoji}
                       </div>
                       <div className="flex-1">
                         <h4 className="font-semibold text-foreground text-lg">{config.label}</h4>

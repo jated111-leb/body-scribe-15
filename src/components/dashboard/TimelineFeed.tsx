@@ -1,21 +1,23 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Utensils, Activity, Pill, AlertCircle, FileText, User, Stethoscope, Syringe, Calendar, Filter, X } from "lucide-react";
+import { Calendar, Filter, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format, startOfDay, isSameDay } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EVENT_EMOJIS } from "@/lib/iconEmojis";
 
 const EVENT_TYPES = [
-  { value: "meal", label: "Meals", icon: Utensils },
-  { value: "workout", label: "Workouts", icon: Activity },
-  { value: "medication", label: "Medications", icon: Pill },
-  { value: "symptom", label: "Symptoms", icon: AlertCircle },
-  { value: "doctor_visit", label: "Doctor Visits", icon: User },
-  { value: "injury", label: "Injuries", icon: Stethoscope },
-  { value: "note", label: "Notes", icon: FileText },
+  { value: "meal", label: "Meals", emoji: EVENT_EMOJIS.meal },
+  { value: "workout", label: "Workouts", emoji: EVENT_EMOJIS.workout },
+  { value: "medication", label: "Medications", emoji: EVENT_EMOJIS.medication },
+  { value: "symptom", label: "Symptoms", emoji: EVENT_EMOJIS.symptom },
+  { value: "doctor_visit", label: "Doctor Visits", emoji: EVENT_EMOJIS.doctor_visit },
+  { value: "injury", label: "Injuries", emoji: EVENT_EMOJIS.injury },
+  { value: "note", label: "Notes", emoji: EVENT_EMOJIS.note },
+  { value: "moment", label: "Moments", emoji: EVENT_EMOJIS.moment },
 ];
 
 interface GroupedEvents {
@@ -79,19 +81,9 @@ export const TimelineFeed = () => {
     }
   };
 
-  const getIconForType = (type: string) => {
-    switch (type) {
-      case "meal": return Utensils;
-      case "workout": 
-      case "activity": return Activity;
-      case "medication": return Pill;
-      case "symptom": 
-      case "illness": return AlertCircle;
-      case "doctor_visit": return User;
-      case "injury": return Stethoscope;
-      case "surgery": return Syringe;
-      default: return FileText;
-    }
+  const getEmojiForType = (type: string): string => {
+    const typeConfig = EVENT_TYPES.find(t => t.value === type);
+    return typeConfig?.emoji || EVENT_EMOJIS.note;
   };
 
   const getColorForType = (type: string) => {
@@ -173,7 +165,6 @@ export const TimelineFeed = () => {
         <CardContent>
           <div className="flex flex-wrap gap-2">
             {EVENT_TYPES.map(type => {
-              const Icon = type.icon;
               const isSelected = selectedFilters.includes(type.value);
               return (
                 <Button
@@ -183,7 +174,7 @@ export const TimelineFeed = () => {
                   onClick={() => toggleFilter(type.value)}
                   className="gap-2"
                 >
-                  <Icon className="h-4 w-4" />
+                  <span className="text-lg">{type.emoji}</span>
                   {type.label}
                 </Button>
               );
@@ -221,7 +212,7 @@ export const TimelineFeed = () => {
               <CardContent className="p-0">
                 <div className="divide-y">
                   {events.map((event) => {
-                    const Icon = getIconForType(event.event_type);
+                    const emoji = getEmojiForType(event.event_type);
                     const colorClass = getColorForType(event.event_type);
                     
                     return (
@@ -229,8 +220,8 @@ export const TimelineFeed = () => {
                         <div className="flex gap-4">
                           {/* Time & Icon */}
                           <div className="flex flex-col items-center gap-2 min-w-[80px]">
-                            <div className={`p-2 rounded-lg border ${colorClass}`}>
-                              <Icon className="h-5 w-5" />
+                            <div className={`p-2 rounded-lg border ${colorClass} text-2xl`}>
+                              {emoji}
                             </div>
                             <span className="text-sm font-medium text-muted-foreground">
                               {format(new Date(event.event_date), 'HH:mm')}
