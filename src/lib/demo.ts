@@ -1,3 +1,5 @@
+import { supabase } from "@/integrations/supabase/client";
+
 export type TimelineEvent = {
   id: string;
   user_id?: string | null;
@@ -125,3 +127,42 @@ export const getGuestEventsForRange = (start: Date, end: Date): TimelineEvent[] 
     return t >= s && t <= e;
   });
 };
+
+// Test data seeding functions
+interface SeedOptions {
+  clientCount?: number;
+  dieticianCount?: number;
+  eventsPerUser?: number;
+}
+
+interface SeedResult {
+  success: boolean;
+  message: string;
+  credentials?: {
+    password: string;
+  };
+  userIds?: {
+    clients: string[];
+    dieticians: string[];
+  };
+  error?: string;
+}
+
+export async function seedTestData(options: SeedOptions = {}): Promise<SeedResult> {
+  const { clientCount = 3, dieticianCount = 1, eventsPerUser = 30 } = options;
+
+  const { data, error } = await supabase.functions.invoke('seed-test-data', {
+    body: { clientCount, dieticianCount, eventsPerUser }
+  });
+
+  if (error) {
+    return { success: false, message: 'Failed to seed test data', error: error.message };
+  }
+
+  return data as SeedResult;
+}
+
+// Quick function to seed default test data
+export async function quickSeed(): Promise<SeedResult> {
+  return seedTestData({ clientCount: 3, dieticianCount: 1, eventsPerUser: 30 });
+}
