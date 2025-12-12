@@ -11,6 +11,7 @@ import { Stethoscope, User } from "lucide-react";
 const RoleSelection = () => {
   const [selectedRole, setSelectedRole] = useState<'dietician' | 'client' | null>(null);
   const [loading, setLoading] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
   const { user } = useAuth();
   const { role } = useUserRole();
   const navigate = useNavigate();
@@ -19,7 +20,10 @@ const RoleSelection = () => {
   // Prevent users who already selected a role from accessing this page
   useEffect(() => {
     const checkRoleStatus = async () => {
-      if (!user) return;
+      if (!user) {
+        setCheckingAccess(false);
+        return;
+      }
       
       const { data: profile } = await supabase
         .from("profiles")
@@ -34,7 +38,10 @@ const RoleSelection = () => {
         } else if (role === 'client') {
           navigate('/dashboard', { replace: true });
         }
+        return; // Don't set checkingAccess to false, we're navigating away
       }
+      
+      setCheckingAccess(false);
     };
     
     checkRoleStatus();
@@ -99,6 +106,15 @@ const RoleSelection = () => {
       setLoading(false);
     }
   };
+
+  // Show loading while checking if user should be on this page
+  if (checkingAccess) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
