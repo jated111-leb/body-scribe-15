@@ -27,8 +27,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { downloadDataExport } from "@/lib/dataExport";
 import { analytics } from "@/lib/analytics";
+import { useUserRole } from "@/hooks/useUserRole";
+import { DieticianSettings } from "@/components/settings/DieticianSettings";
+import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 
 const Settings = () => {
+  const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, signOut } = useAuth();
@@ -479,6 +483,16 @@ const Settings = () => {
       });
     }
   };
+
+  // Show loading state while checking role
+  if (roleLoading) {
+    return <DashboardSkeleton />;
+  }
+
+  // Render dietician settings for dieticians
+  if (role === 'dietician') {
+    return <DieticianSettings />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-subtle p-6">
