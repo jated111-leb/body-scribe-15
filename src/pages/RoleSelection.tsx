@@ -13,7 +13,7 @@ const RoleSelection = () => {
   const [loading, setLoading] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const { user } = useAuth();
-  const { role } = useUserRole();
+  const { role, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -22,6 +22,11 @@ const RoleSelection = () => {
     const checkRoleStatus = async () => {
       if (!user) {
         setCheckingAccess(false);
+        return;
+      }
+
+      // Wait for role hook to finish loading before making decisions
+      if (roleLoading) {
         return;
       }
       
@@ -37,15 +42,18 @@ const RoleSelection = () => {
           navigate('/dietician-dashboard', { replace: true });
         } else if (role === 'client') {
           navigate('/dashboard', { replace: true });
+        } else {
+          // Role data not yet available but role_selected is true - allow user to stay/re-select
+          setCheckingAccess(false);
         }
-        return; // Don't set checkingAccess to false, we're navigating away
+        return;
       }
       
       setCheckingAccess(false);
     };
     
     checkRoleStatus();
-  }, [user, role, navigate]);
+  }, [user, role, roleLoading, navigate]);
 
   const handleRoleSelect = async () => {
     if (!selectedRole || !user) return;
