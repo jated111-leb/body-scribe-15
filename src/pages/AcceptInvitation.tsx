@@ -21,6 +21,7 @@ const AcceptInvitation = () => {
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [isExistingUser, setIsExistingUser] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -36,17 +37,33 @@ const AcceptInvitation = () => {
     loadInvitation();
   }, [token]);
 
+  // Check if user is already logged in
+  useEffect(() => {
+    if (user && invitation) {
+      // User is logged in - check if their email matches the invitation
+      if (user.email === invitation.client_email) {
+        setIsExistingUser(true);
+      } else {
+        toast({
+          title: "Email mismatch",
+          description: "You're logged in with a different email. Please log out and try again.",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [user, invitation]);
+
   const loadInvitation = async () => {
     try {
-      // Check invitation validity
-      const { data, error } = await supabase
-        .from("client_invitations")
-        .select("*")
-        .eq("invitation_token", token)
-        .eq("status", "pending")
-        .single();
+      // Use service role via edge function since user may not be logged in
+      const { data, error } = await supabase.functions.invoke("accept-invitation", {
+        body: { 
+          action: "validate",
+          invitationToken: token 
+        },
+      });
 
-      if (error || !data) {
+      if (error || !data?.invitation) {
         toast({
           title: "Invalid or expired invitation",
           description: "This invitation link is no longer valid",
@@ -56,18 +73,7 @@ const AcceptInvitation = () => {
         return;
       }
 
-      // Check if expired
-      if (new Date(data.expires_at) < new Date()) {
-        toast({
-          title: "Invitation expired",
-          description: "This invitation has expired. Please request a new one.",
-          variant: "destructive",
-        });
-        navigate("/auth");
-        return;
-      }
-
-      setInvitation(data);
+      setInvitation(data.invitation);
     } catch (error) {
       console.error("Error loading invitation:", error);
       toast({
@@ -81,7 +87,40 @@ const AcceptInvitation = () => {
     }
   };
 
-  const handleAccept = async (e: React.FormEvent) => {
+  const handleAcceptExistingUser = async () => {
+    if (!user || !invitation) return;
+    setSubmitting(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("accept-invitation", {
+        body: {
+          invitationToken: token,
+          userId: user.id,
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.success) throw new Error("Failed to accept invitation");
+
+      toast({
+        title: "Invitation accepted!",
+        description: "You are now connected with your dietician",
+      });
+
+      navigate("/dashboard");
+    } catch (error: any) {
+      console.error("Error accepting invitation:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to accept invitation",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleAcceptNewUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
@@ -143,6 +182,51 @@ const AcceptInvitation = () => {
     );
   }
 
+  // Existing user flow - just show accept button
+  if (isExistingUser && user) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-6">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+              <CheckCircle2 className="w-6 h-6 text-primary" />
+            </div>
+            <CardTitle className="text-2xl">Accept Invitation</CardTitle>
+            <CardDescription>
+              You've been invited to connect with a dietician
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-center p-4 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground">Logged in as</p>
+              <p className="font-medium">{user.email}</p>
+            </div>
+
+            <p className="text-sm text-center text-muted-foreground">
+              By accepting, you agree to share your health data with your dietician
+            </p>
+
+            <Button
+              className="w-full"
+              onClick={handleAcceptExistingUser}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Accepting...
+                </>
+              ) : (
+                "Accept Invitation"
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // New user flow - show signup form
   return (
     <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-6">
       <Card className="w-full max-w-md">
@@ -156,7 +240,7 @@ const AcceptInvitation = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleAccept} className="space-y-4">
+          <form onSubmit={handleAcceptNewUser} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -216,6 +300,17 @@ const AcceptInvitation = () => {
             <p className="text-xs text-center text-muted-foreground">
               By creating an account, you agree to share your health data with your dietician
             </p>
+
+            <div className="text-center">
+              <Button
+                type="button"
+                variant="link"
+                onClick={() => navigate(`/auth?redirect=/invite?token=${token}`)}
+                className="text-sm"
+              >
+                Already have an account? Log in
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
