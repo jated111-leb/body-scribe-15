@@ -87,14 +87,26 @@ serve(async (req) => {
 
     const { clientCount = 3, dieticianCount = 1, eventsPerUser = 30 } = await req.json().catch(() => ({}));
 
-    const createdUsers: { clients: string[], dieticians: string[] } = { clients: [], dieticians: [] };
+    const createdUsers: { email: string; password: string; role: string; userId: string }[] = [];
+    const password = 'TestPassword123!';
+    let firstDieticianId: string | null = null;
 
-    // Create dieticians
+    // Delete existing test users first
+    console.log('Cleaning up existing test users...');
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+    for (const user of existingUsers?.users || []) {
+      if (user.email?.endsWith('@test.local')) {
+        await supabaseAdmin.auth.admin.deleteUser(user.id);
+        console.log(`Deleted existing test user: ${user.email}`);
+      }
+    }
+
+    // Create dieticians with predictable emails
     for (let i = 0; i < dieticianCount; i++) {
-      const email = `testdietician${Date.now()}${i}@test.local`;
+      const email = `testdietician${i + 1}@test.local`;
       const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email,
-        password: 'TestPassword123!',
+        password,
         email_confirm: true,
         user_metadata: { full_name: `Test Dietician ${i + 1}` }
       });
@@ -105,7 +117,9 @@ serve(async (req) => {
       }
 
       const userId = authUser.user.id;
-      createdUsers.dieticians.push(userId);
+      if (i === 0) firstDieticianId = userId;
+
+      createdUsers.push({ email, password, role: 'dietician', userId });
 
       // Assign dietician role
       await supabaseAdmin.from('user_roles').insert({ user_id: userId, role: 'dietician' });
@@ -125,14 +139,16 @@ serve(async (req) => {
         years_experience: randomInt(3, 15),
         bio: 'Experienced nutrition professional dedicated to helping clients achieve their health goals.'
       });
+
+      console.log(`Created dietician: ${email}`);
     }
 
-    // Create clients
+    // Create clients with predictable emails
     for (let i = 0; i < clientCount; i++) {
-      const email = `testclient${Date.now()}${i}@test.local`;
+      const email = `testclient${i + 1}@test.local`;
       const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email,
-        password: 'TestPassword123!',
+        password,
         email_confirm: true,
         user_metadata: { full_name: `Test Client ${i + 1}` }
       });
@@ -143,7 +159,7 @@ serve(async (req) => {
       }
 
       const userId = authUser.user.id;
-      createdUsers.clients.push(userId);
+      createdUsers.push({ email, password, role: 'client', userId });
 
       // Assign client role
       await supabaseAdmin.from('user_roles').insert({ user_id: userId, role: 'client' });
@@ -184,25 +200,22 @@ serve(async (req) => {
       }
 
       // Link to first dietician if exists
-      if (createdUsers.dieticians.length > 0) {
+      if (firstDieticianId) {
         await supabaseAdmin.from('dietician_clients').insert({
-          dietician_id: createdUsers.dieticians[0],
+          dietician_id: firstDieticianId,
           client_id: userId,
           status: 'active'
         });
       }
+
+      console.log(`Created client: ${email}`);
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Created ${createdUsers.dieticians.length} dieticians and ${createdUsers.clients.length} clients`,
-        credentials: {
-          password: 'TestPassword123!',
-          dieticianEmails: createdUsers.dieticians.length > 0 ? 'Check database for emails' : [],
-          clientEmails: createdUsers.clients.length > 0 ? 'Check database for emails' : []
-        },
-        userIds: createdUsers
+        message: `Created ${createdUsers.filter(u => u.role === 'dietician').length} dieticians and ${createdUsers.filter(u => u.role === 'client').length} clients`,
+        users: createdUsers.map(u => ({ email: u.email, password: u.password, role: u.role }))
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
