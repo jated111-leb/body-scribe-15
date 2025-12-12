@@ -58,7 +58,8 @@ export const ProtectedRoute = ({
       const currentPath = window.location.pathname;
       
       // User hasn't selected a role yet, send to role selection
-      if (roleSelected === false || !role) {
+      // Only redirect when roleSelected is explicitly false (not when role is still loading)
+      if (roleSelected === false) {
         navigate("/role-selection", { replace: true });
         return;
       }
@@ -115,6 +116,11 @@ export const ProtectedRoute = ({
 
   // Don't render if waiting for profile or role
   if (user && (checkingProfile || roleLoading)) {
+    return null;
+  }
+
+  // Don't render children until role is loaded when a specific role is required
+  if (requireRole && !role) {
     return null;
   }
 
