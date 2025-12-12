@@ -7,8 +7,9 @@ const corsHeaders = {
 };
 
 interface AcceptInvitationRequest {
+  action?: string;
   invitationToken: string;
-  userId: string;
+  userId?: string;
 }
 
 serve(async (req) => {
@@ -17,11 +18,11 @@ serve(async (req) => {
   }
 
   try {
-    const { invitationToken, userId }: AcceptInvitationRequest = await req.json();
+    const { action, invitationToken, userId }: AcceptInvitationRequest = await req.json();
 
-    if (!invitationToken || !userId) {
+    if (!invitationToken) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
+        JSON.stringify({ error: "Missing invitation token" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -66,21 +67,82 @@ serve(async (req) => {
       );
     }
 
-    // Create dietician-client relationship
-    const { error: relationshipError } = await supabaseAdmin
-      .from("dietician_clients")
-      .insert({
-        dietician_id: invitation.dietician_id,
-        client_id: userId,
-        status: "active"
-      });
-
-    if (relationshipError) {
-      console.error("Error creating relationship:", relationshipError);
+    // If action is "validate", just return the invitation details
+    if (action === "validate") {
       return new Response(
-        JSON.stringify({ error: "Failed to create relationship" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ 
+          invitation: {
+            id: invitation.id,
+            client_email: invitation.client_email,
+            dietician_id: invitation.dietician_id,
+            expires_at: invitation.expires_at
+          }
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // For acceptance, we need the userId
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: "Missing user ID for acceptance" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Check if relationship already exists
+    const { data: existingRelationship } = await supabaseAdmin
+      .from("dietician_clients")
+      .select("id")
+      .eq("dietician_id", invitation.dietician_id)
+      .eq("client_id", userId)
+      .single();
+
+    if (existingRelationship) {
+      // Update existing relationship to active
+      await supabaseAdmin
+        .from("dietician_clients")
+        .update({ status: "active" })
+        .eq("id", existingRelationship.id);
+    } else {
+      // Create new dietician-client relationship
+      const { error: relationshipError } = await supabaseAdmin
+        .from("dietician_clients")
+        .insert({
+          dietician_id: invitation.dietician_id,
+          client_id: userId,
+          status: "active"
+        });
+
+      if (relationshipError) {
+        console.error("Error creating relationship:", relationshipError);
+        return new Response(
+          JSON.stringify({ error: "Failed to create relationship" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // Ensure user has client role
+    const { data: existingRole } = await supabaseAdmin
+      .from("user_roles")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("role", "client")
+      .single();
+
+    if (!existingRole) {
+      const { error: roleError } = await supabaseAdmin
+        .from("user_roles")
+        .insert({
+          user_id: userId,
+          role: "client"
+        });
+
+      if (roleError) {
+        console.error("Error assigning client role:", roleError);
+        // Don't fail the whole operation for this
+      }
     }
 
     // Update invitation status

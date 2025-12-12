@@ -13,6 +13,7 @@ import { InferredPatternPrompt } from "@/components/dashboard/InferredPatternPro
 import { LifestyleAchievements } from "@/components/dashboard/LifestyleAchievements";
 import { QuickLogDialog } from "@/components/dashboard/QuickLogDialog";
 import { ProfileAvatar } from "@/components/dashboard/ProfileAvatar";
+import { PendingInvitationBanner } from "@/components/dashboard/PendingInvitationBanner";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -102,6 +103,9 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       {/* Main Content */}
       <div className="max-w-7xl mx-auto p-6">
+        {/* Pending Invitation Banner */}
+        <PendingInvitationBanner />
+        
         <div className="space-y-8">
           {/* Header with Profile Avatar */}
           <div className="flex justify-between items-start gap-4">
