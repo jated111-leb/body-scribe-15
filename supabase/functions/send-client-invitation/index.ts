@@ -157,6 +157,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({
         success: true,
         invitationId: invitation.id,
+        invitationToken: invitation.invitation_token,
         message: "Invitation sent successfully",
       }),
       {
